@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>第 9 章 · 评测：盲测 A/B、Bradley-Terry Elo 和会说真话的仿真 · 读懂 GR00T 2</title>
+<style>
+:root{--bg:#fbfbfa;--fg:#1f2328;--mute:#5d6470;--line:#e3e5e8;--card:#fff;--acc:#2f6fdf;--code:#f2f3f5;--quote:#f4f6fa}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181d;--fg:#e4e7ec;--mute:#9aa3b2;--line:#2c323b;--card:#1c2026;--acc:#7aa7ff;--code:#22272f;--quote:#1b2029}}
+:root[data-theme="dark"]{--bg:#15181d;--fg:#e4e7ec;--mute:#9aa3b2;--line:#2c323b;--card:#1c2026;--acc:#7aa7ff;--code:#22272f;--quote:#1b2029}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.75 -apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",sans-serif}
+a{color:var(--acc)}
+header.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+header.top .in{max-width:860px;margin:0 auto;padding:10px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:14px}
+header.top .brand{font-weight:600;color:var(--fg);text-decoration:none;margin-right:auto}
+header.top a{text-decoration:none}
+main{max-width:860px;margin:0 auto;padding:24px 16px 72px;overflow-wrap:anywhere}
+h1{font-size:28px;line-height:1.35;margin:8px 0 16px} h2{font-size:22px;margin:40px 0 12px;padding-top:8px;border-top:1px solid var(--line)} h3{font-size:18px;margin:28px 0 8px}
+img{max-width:100%;height:auto;border-radius:8px;border:1px solid var(--line);background:#fff}
+blockquote{margin:16px 0;padding:10px 16px;background:var(--quote);border-left:3px solid var(--acc);border-radius:4px;color:var(--mute)}
+blockquote p{margin:4px 0}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:var(--code);padding:12px 14px;border-radius:8px;overflow-x:auto} pre code{padding:0;background:none}
+table{border-collapse:collapse;display:block;overflow-x:auto;max-width:100%;margin:12px 0;font-size:15px}
+th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top} th{background:var(--code)}
+details{border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin:8px 0;background:var(--card)}
+details[open]{padding-bottom:10px} summary{cursor:pointer;color:var(--acc);font-weight:500}
+mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+.btn{display:inline-block;margin:4px 8px 4px 0;padding:6px 14px;border:1px solid var(--acc);border-radius:999px;text-decoration:none;font-size:14px}
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin:16px 0}
+.card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;color:inherit;text-decoration:none}
+.card:hover{border-color:var(--acc)} .card img{border:0;border-bottom:1px solid var(--line);border-radius:0;aspect-ratio:16/10;object-fit:contain;width:100%}
+.card .no{color:var(--mute);font-size:13px;padding:8px 12px 0} .card .t{padding:0 12px 12px;font-weight:500;line-height:1.5}
+.lead{font-size:17px;color:var(--mute)}
+footer{max-width:860px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font-size:13px}
+</style>
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"],["$$","$$"]],processEscapes:true,processEnvironments:true}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+</head><body>
+<header class="top"><div class="in">
+<a class="brand" href="../index.html">读懂 GR00T 2</a>
+<a href="../lessons/index.html">讲义目录</a>
+<a href="../animations/index.html">动画</a>
+<a href="../review.html">复习卡片</a>
+<a href="../lessons/appendix-glossary.html">缩写表</a>
+</div></header>
+<main>
+<h1 id="9-abbradley-terry-elo">第 9 章 · 评测：盲测 A/B、Bradley-Terry Elo 和会说真话的仿真</h1><p><a class="btn" href="../animations/09-elo-arena.html">▶ 打开本章可交互动画</a></p>
+<blockquote>
+<p>本章回答：真机成功率每天都在漂，几个月的评测怎么还能互相比较？"GR00T 2 比 π0.5 强 236 Elo"是怎么算出来的、有多可信？仿真能不能代替一部分真机评测？<br />
+讲解日期：2026-11-15 · 上一章：<a href="../lessons/08-humanoid.html">第 8 章 人形全身</a> · 下一章：<a href="../lessons/10-deployment.html">第 10 章 部署</a><br />
+对应原文：<code>materials/text/gr00t2-whitepaper.txt</code> §4.3 L1030–L1096；附录 D.4 L4071–L4170（式 4–8，Tab. 13 L4155）、D.7 L4354 起；§4.5.2 L1359–L1381；§5 Evaluation L1677–L1700<br />
+本章缩写：A/B = A/B test（两组对照测试）；Elo = 以发明者 Arpad Elo 命名的等级分；CI = Confidence Interval（置信 / 区间）；MMRV = Mean Maximum Rank Violation（平均 / 最大 / 排名 / 违背）；MM = Minorization-Maximization（下界构造 / 最大化）算法。全部缩写见 <a href="../lessons/appendix-glossary.html">附录 · 缩写与术语表</a></p>
+</blockquote>
+<h2 id="_1">讲解</h2>
+<h3 id="ab2026-11-15">第一步：为什么不报绝对成功率，而做盲测 A/B（2026-11-15）</h3>
+<p><strong>类比：比两个跑步选手，让他们同一天、同一条跑道、同一阵风里并排跑。</strong> 今天风大，两人都慢，但谁快谁慢还是看得出来；如果一个周一跑、一个周五跑，风速差异会盖过实力差异。</p>
+<p><strong>问题</strong>（L1033–L1036）：绝对成功率随工位、操作员、硬件、日期漂移，一场的分数不能和另一场比。</p>
+<p><strong>做法</strong>（L1072–L1076）：一次 A/B 试验把 2–4 个 checkpoint 按<strong>随机顺序</strong>、在<strong>同一场景</strong>、由<strong>同一操作员</strong>、<strong>几分钟内</strong>跑完；漂移是共享的，在比较里抵消。操作员不知道在跑哪个模型（盲测）。</p>
+<p><strong>GearArena 规模</strong>（截至 2026-11-06 快照）：195 场 campaign、16,044 条打分 episode、11,767 对比较、10 个 YAM 工位、20+ 操作员、71 个 checkpoint，时间跨度 2026 年 7–11 月。</p>
+<p><strong>任务从第一性原理设计</strong>（L1077–L1081）：先问"机器人应该会什么"，再挑能暴露这些能力的任务，最后在真 checkpoint 上试——人人都做到的任务归档，没人做到的搁置（两者都区分不了任何东西）。当前 YAM V2 套件：38 个语言跟随和动作基元任务，带部分分量规。</p>
+<p><strong>一句话</strong>：漂移会淹没差异，所以只做"同场同人同几分钟"的盲测对比，再把所有对比累积成一张排行榜。</p>
+<h3 id="elo-2026-11-15">第二步：从一场场对比到一个 Elo 分（2026-11-15）</h3>
+<p><strong>类比：下棋排名。</strong> 不需要每两个人都下过，只要所有人通过对局连成一张网，就能给每个人一个分数，分差直接对应"预期胜率"。</p>
+<p><strong>公式</strong>（附录 D.4）。</p>
+<p>Bradley-Terry 模型（式 4，L4080）：每个 checkpoint 一个强度 <span class="arithmatex">\(p_i&gt;0\)</span>，</p>
+<div class="arithmatex">\[P(i\text{ 胜 }j)=\frac{p_i}{p_i+p_j}\]</div>
+<p>用 MM 迭代做最大似然（式 5，L4095）：<span class="arithmatex">\(p_i\leftarrow\dfrac{W_i}{\sum_{j\ne i}n_{ij}/(p_i+p_j)}\)</span>，<span class="arithmatex">\(W_i\)</span> 是加权胜场（平局算半场），<span class="arithmatex">\(n_{ij}\)</span> 是 <span class="arithmatex">\(i\)</span>、<span class="arithmatex">\(j\)</span> 之间的总权重。每个 checkpoint 还和一个固定锚点打一场"虚拟平局"，防止全胜/全败跑到无穷大。</p>
+<p>换算到 Elo（式 6，L4105）：<span class="arithmatex">\(\text{Elo}_i=1500+400\log_{10}\dfrac{p_i}{\bar p}\)</span>，<span class="arithmatex">\(\bar p\)</span> 是所有强度的几何平均。由此得到</p>
+<div class="arithmatex">\[P(i\text{ 胜 }j)=\frac{1}{1+10^{-(\text{Elo}_i-\text{Elo}_j)/400}}\]</div>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>读法</th>
+<th>意思</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(p_i\)</span></td>
+<td>"p i"</td>
+<td>第 <span class="arithmatex">\(i\)</span> 个 checkpoint 的强度</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(W_i\)</span></td>
+<td>"W i"</td>
+<td>它的加权胜场数</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(n_{ij}\)</span></td>
+<td>"n i j"</td>
+<td><span class="arithmatex">\(i\)</span> 与 <span class="arithmatex">\(j\)</span> 之间比较的总权重</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\bar p\)</span></td>
+<td>"p bar"</td>
+<td>全体强度的几何平均，对应 Elo 1500</td>
+</tr>
+</tbody>
+</table>
+<p><strong>细节规则</strong>：
+- 一次 <span class="arithmatex">\(n\)</span> 个 checkpoint 的试验产生 <span class="arithmatex">\(\binom n2\)</span> 场比较；打分相同算平局；两个都 0 分的比较丢掉（只说明任务太难，不能排序）。
+- <strong>任务归一化</strong>（式 7，L4114）：同一对 checkpoint 在同一任务上的所有比较总权重归一为 1——每个任务只算一次，常测的任务不会主导。
+- <strong>按任务做 bootstrap</strong>（L4122–L4135）：同一任务的多次试验摆的是同一场景，不独立；所以重采样<strong>任务</strong>而不是试验，500 次，每次重算权重和拟合。若只在重采样前算一次权重，区间会窄约 30%（假精确）。
+- <strong>配对比较</strong>（式 8，L4136）：<span class="arithmatex">\(P(A&gt;B)=\frac1B\sum_b\mathbb 1[\text{Elo}_A^{(b)}&gt;\text{Elo}_B^{(b)}]\)</span>——两个区间重叠不代表分不开，因为抽到的任务好坏会同时抬高两者，差值里会抵消。</p>
+<p><strong>例子：把分差换成胜率。</strong></p>
+<table>
+<thead>
+<tr>
+<th>分差</th>
+<th>计算</th>
+<th>预期胜率</th>
+<th>来源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>100</td>
+<td><span class="arithmatex">\(1/(1+10^{-0.25})=1/1.562\)</span></td>
+<td>64%</td>
+<td>原文定义（L4107）</td>
+</tr>
+<tr>
+<td>95（GR00T 2 vs GR00T 1.7）</td>
+<td><span class="arithmatex">\(1/(1+10^{-0.2375})=1/1.579\)</span></td>
+<td>63%</td>
+<td>Tab. 13</td>
+</tr>
+<tr>
+<td>236（GR00T 2 vs π0.5）</td>
+<td><span class="arithmatex">\(1/(1+10^{-0.59})=1/1.257\)</span></td>
+<td>80%</td>
+<td>Tab. 13</td>
+</tr>
+</tbody>
+</table>
+<p>Tab. 13 的区间：vs π0.5 为 +236 [+171, +325]，vs GR00T 1.7 为 +95 [+50, +148]，两者 <span class="arithmatex">\(P(A&gt;B)&gt;0.99\)</span>；vs Turbo（★ 参考 checkpoint）为 −14 [−58, +28]，<span class="arithmatex">\(P=0.28\)</span>——<strong>分不开</strong>。</p>
+<p><strong>一句话</strong>：Bradley-Terry 把所有对比拟合成强度，换算成 Elo；按任务做 bootstrap 才是诚实的不确定性。</p>
+<h3 id="2026-11-15">第三步：仿真当"代理评测"有多准（2026-11-15）</h3>
+<p><strong>类比：模拟考和高考的相关性。</strong> 如果模拟考排名和高考排名高度一致，平时就可以用模拟考筛人，只让最后几名候选去"高考"。</p>
+<p><strong>做法</strong>（§4.5.1–4.5.2）：用 agent 辅助流程（SimFoundry 工具 + 真机视频、3D 扫描、照片）把真实任务重建到 Isaac Lab Arena / Newton / MuJoCo Warp 里；<strong>用真机数据训的策略直接在仿真里测</strong>，不在仿真数据上微调。</p>
+<p><strong>例子：一致性</strong>（25 个 YAM 任务，14 个 checkpoint，真机每任务 5 次盲测 A/B、仿真 10 次）：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>Pearson <span class="arithmatex">\(r\)</span></th>
+<th>Spearman <span class="arithmatex">\(\rho\)</span></th>
+<th>MMRV</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任务进度</td>
+<td>0.93</td>
+<td>0.84</td>
+<td>0.059</td>
+</tr>
+<tr>
+<td>成功率</td>
+<td>0.92</td>
+<td>0.89</td>
+<td>0.055</td>
+</tr>
+<tr>
+<td>Bradley-Terry Elo</td>
+<td>0.93</td>
+<td>0.90</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>作者说这些值达到"同样试验次数下完美仿真器能达到的相关性"的 95–99%（L1370）。DROID 场景重建的 5 个 checkpoint 更高：0.98 / 0.95 / 0.97。</p>
+<p><strong>用法</strong>：预训练中用仿真跟踪中间 checkpoint，把最终候选缩到 3 个再上真机；数据管线改动（序列打包、混合分片采样）先在小规模训练 + 闭环仿真里验证；推理设置也先在仿真里筛（L1373–L1380）。</p>
+<p><strong>统计学的硬限制</strong>（§5，L1679–L1681）：20 次试验分得清 GR00T 2 和基线的大差距，但部署关心的是小差距——分辨 95% vs 99% 每个策略约需 285 次，99% vs 99.9% 要 1,000 次以上（双侧两比例 z 检验，α = 0.05，功效 80%）。而且 30–35% 的比较是平局（D.7）。</p>
+<p><strong>一句话</strong>：校准过的仿真和真机 Elo 相关 0.93，可以当日常筛选器；但"99% 级可靠性"靠现有试验量根本测不出来。</p>
+<h3 id="ab-elo">动画演示：一场场盲测 A/B，怎么收敛成一张 Elo 排行榜</h3>
+<p><img alt="一场场盲测 A/B，怎么收敛成一张 Elo 排行榜" src="../animations/09-elo-arena.gif" /></p>
+<p>可交互版：<a href="../animations/09-elo-arena.html">animations/09-elo-arena.html</a>（▶ 播放、→ 单步、↺ 从头开始；"换一批随机结果"按钮）</p>
+<p><strong>怎么看</strong>：
+1. 真实分差按 Tab. 13 设定（π0.5 → GR00T 1.7 +141 → GR00T 2 +95），每步一次三方同场试验（第一步）。
+2. 每步后用式 (5) 的 MM 迭代重拟合，三条线逐渐靠近各自的虚线（第二步）。
+3. 按"换一批随机结果"多跑几次，体会少量比较时估计有多不稳——这是第二步要按任务做 bootstrap 的原因。</p>
+<h2 id="_2">练习与作答记录</h2>
+<p><strong>题 1</strong>（第二步 胜率换算）：GR00T 2 Turbo 比 GR00T 1.7 高 109 Elo（Tab. 13），预期胜率是多少？</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<p><strong>题 2</strong>（第二步 bootstrap）：为什么按任务重采样比按试验重采样得到的区间更宽？用"同一任务 5 次试验摆同一个场景"解释。</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<p><strong>题 3</strong>（第三步 样本量）：一个策略真实成功率 70%，只跑 20 次，用 <span class="arithmatex">\(\sqrt{p(1-p)/n}\)</span> 算 SEM。它和一个真实 80% 的策略能靠 20 次分开吗？</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<h2 id="_3">口诀</h2>
+<blockquote>
+<p>同场同人几分钟，漂移相消才算公；<br />
+强度拟合换 Elo，四百为底十为幂；<br />
+抽样要抽任务头，仿真零点九三准，九九可靠测不够。</p>
+</blockquote>
+<h2 id="_4">本章复习卡片</h2>
+<p>G19、G20、G21（练习做完后，按答错、卡住的地方再补。）</p>
+<h2 id="_5">附录 · 延伸阅读</h2>
+<h3 id="_6">推荐阅读</h3>
+<table>
+<thead>
+<tr>
+<th>读什么</th>
+<th>读哪里</th>
+<th>读它为了什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>★ GR00T 2 白皮书</td>
+<td>附录 D L3896–L4436</td>
+<td>GearArena 全部方法论</td>
+</tr>
+<tr>
+<td>★ GR00T 2 白皮书</td>
+<td>§4.5.2 L1359–L1381、附录 J.2</td>
+<td>仿真代理评测</td>
+</tr>
+<tr>
+<td>GR00T 2 白皮书</td>
+<td>§5 Evaluation L1677–L1700</td>
+<td>统计学限制与开放方向</td>
+</tr>
+<tr>
+<td>Bradley &amp; Terry (1952)、Hunter (2004) MM 算法</td>
+<td>原论文</td>
+<td>模型与拟合</td>
+</tr>
+<tr>
+<td>Davison &amp; Hinkley (1997)</td>
+<td>cluster bootstrap 章节</td>
+<td>集群重采样</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_7">数学原理</h3>
+<ul>
+<li><strong>Bradley-Terry</strong>：成对比较的 logistic 模型，<span class="arithmatex">\(\log(p_i/p_j)\)</span> 是对数胜率比。</li>
+<li><strong>MM 算法</strong>：每步构造似然的下界并最大化，单调收敛。</li>
+<li><strong>Cluster bootstrap</strong>：样本有组内相关时按组重采样，保留组内相关结构。</li>
+<li><strong>两比例 z 检验的样本量</strong>：<span class="arithmatex">\(n\approx\frac{(z_{1-\alpha/2}\sqrt{2\bar p\bar q}+z_{1-\beta}\sqrt{p_1q_1+p_2q_2})^2}{(p_1-p_2)^2}\)</span>。</li>
+</ul>
+<h3 id="_8">公式清单</h3>
+<table>
+<thead>
+<tr>
+<th>公式</th>
+<th>出处</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(P(i\text{ 胜 }j)=p_i/(p_i+p_j)\)</span></td>
+<td>式 (4)</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(p_i\leftarrow W_i/\sum_{j\ne i}\frac{n_{ij}}{p_i+p_j}\)</span></td>
+<td>式 (5)</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\text{Elo}_i=1500+400\log_{10}(p_i/\bar p)\)</span></td>
+<td>式 (6)</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(w_m=1/\lvert\{m':\text{同一对、同一任务}\}\rvert\)</span></td>
+<td>式 (7)</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(P(A&gt;B)=\frac1B\sum_b\mathbb 1[\text{Elo}_A^{(b)}&gt;\text{Elo}_B^{(b)}]\)</span></td>
+<td>式 (8)</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(P=1/(1+10^{-\Delta/400})\)</span></td>
+<td>Elo 分差 → 预期胜率</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_9">代码对照</h3>
+<p>本章暂无代码对照：G2-M4（Bradley-Terry + 按任务 bootstrap 脚本）完成后补 <code>ch09_evaluation.py</code>，核对"100 Elo = 64%、236 Elo ≈ 80%"。</p><nav class="pager"><a href="08-humanoid.html">← 第 8 章 · 人形全身：Turbo 想动作，SONIC 保平衡</a><a href="10-deployment.html">第 10 章 · 部署：从 720 ms 到 124 ms，再让动作连得上、做得比人快 →</a></nav>
+</main>
+<footer>来自个人学习仓库的对话讲义，含练习作答记录。源码：<a href="https://github.com/wikieden/reading-gr00t2">github.com/wikieden/reading-gr00t2</a></footer>
+</body></html>

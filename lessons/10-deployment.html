@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>第 10 章 · 部署：从 720 ms 到 124 ms，再让动作连得上、做得比人快 · 读懂 GR00T 2</title>
+<style>
+:root{--bg:#fbfbfa;--fg:#1f2328;--mute:#5d6470;--line:#e3e5e8;--card:#fff;--acc:#2f6fdf;--code:#f2f3f5;--quote:#f4f6fa}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181d;--fg:#e4e7ec;--mute:#9aa3b2;--line:#2c323b;--card:#1c2026;--acc:#7aa7ff;--code:#22272f;--quote:#1b2029}}
+:root[data-theme="dark"]{--bg:#15181d;--fg:#e4e7ec;--mute:#9aa3b2;--line:#2c323b;--card:#1c2026;--acc:#7aa7ff;--code:#22272f;--quote:#1b2029}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.75 -apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",sans-serif}
+a{color:var(--acc)}
+header.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+header.top .in{max-width:860px;margin:0 auto;padding:10px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:14px}
+header.top .brand{font-weight:600;color:var(--fg);text-decoration:none;margin-right:auto}
+header.top a{text-decoration:none}
+main{max-width:860px;margin:0 auto;padding:24px 16px 72px;overflow-wrap:anywhere}
+h1{font-size:28px;line-height:1.35;margin:8px 0 16px} h2{font-size:22px;margin:40px 0 12px;padding-top:8px;border-top:1px solid var(--line)} h3{font-size:18px;margin:28px 0 8px}
+img{max-width:100%;height:auto;border-radius:8px;border:1px solid var(--line);background:#fff}
+blockquote{margin:16px 0;padding:10px 16px;background:var(--quote);border-left:3px solid var(--acc);border-radius:4px;color:var(--mute)}
+blockquote p{margin:4px 0}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:var(--code);padding:12px 14px;border-radius:8px;overflow-x:auto} pre code{padding:0;background:none}
+table{border-collapse:collapse;display:block;overflow-x:auto;max-width:100%;margin:12px 0;font-size:15px}
+th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top} th{background:var(--code)}
+details{border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin:8px 0;background:var(--card)}
+details[open]{padding-bottom:10px} summary{cursor:pointer;color:var(--acc);font-weight:500}
+mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+.btn{display:inline-block;margin:4px 8px 4px 0;padding:6px 14px;border:1px solid var(--acc);border-radius:999px;text-decoration:none;font-size:14px}
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin:16px 0}
+.card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;color:inherit;text-decoration:none}
+.card:hover{border-color:var(--acc)} .card img{border:0;border-bottom:1px solid var(--line);border-radius:0;aspect-ratio:16/10;object-fit:contain;width:100%}
+.card .no{color:var(--mute);font-size:13px;padding:8px 12px 0} .card .t{padding:0 12px 12px;font-weight:500;line-height:1.5}
+.lead{font-size:17px;color:var(--mute)}
+footer{max-width:860px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font-size:13px}
+</style>
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"],["$$","$$"]],processEscapes:true,processEnvironments:true}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+</head><body>
+<header class="top"><div class="in">
+<a class="brand" href="../index.html">读懂 GR00T 2</a>
+<a href="../lessons/index.html">讲义目录</a>
+<a href="../animations/index.html">动画</a>
+<a href="../review.html">复习卡片</a>
+<a href="../lessons/appendix-glossary.html">缩写表</a>
+</div></header>
+<main>
+<h1 id="10-720-ms-124-ms">第 10 章 · 部署：从 720 ms 到 124 ms，再让动作连得上、做得比人快</h1><p><a class="btn" href="../animations/10-latency-rtc.html">▶ 打开本章可交互动画</a></p>
+<blockquote>
+<p>本章回答：一个要画视频的 WAM 怎么做到实时？剩下的延迟里，怎么让相邻两个动作块不"卡顿、跳变"？演示有多快机器人就只能多快吗？<br />
+讲解日期：2026-11-15 · 上一章：<a href="../lessons/09-evaluation.html">第 9 章 评测</a> · 下一章：<a href="../lessons/11-open-problems.html">第 11 章 开放问题</a><br />
+对应原文：<code>materials/text/gr00t2-whitepaper.txt</code> §4.6 L1414–L1520；附录 I.1 L6867–L6990（Tab. 27 L6958）、I.2 L6991–L7047（Tab. 28）、I.3 L7048–L7122（Tab. 29）；附录 K.5 L7858–L7891；§4.7.2 L1558–L1580<br />
+本章缩写：TensorRT = NVIDIA 的推理优化引擎（Tensor 张量 / RT = RunTime 运行时）；CUDA = Compute Unified Device Architecture（计算 / 统一 / 设备 / 架构）；FP8 / FP16 / BF16 = 8 / 16 位浮点、Brain Float 16；RTC = Real-Time Chunking（实时 / 分块）；K/V = Key / Value（键 / 值）；VAE = Variational AutoEncoder（变分 / 自编码器）；p50 = 50th percentile（中位数）。全部缩写见 <a href="../lessons/appendix-glossary.html">附录 · 缩写与术语表</a></p>
+</blockquote>
+<h2 id="_1">讲解</h2>
+<h3 id="2026-11-15">第一步：一层层削延迟（2026-11-15）</h3>
+<p><strong>类比：赶早班车的人。</strong> 先别重复做事（昨晚把衣服摆好 = 复用文本特征、预计算时间步），再换更快的交通工具（TensorRT 编译），再把固定路线背熟（CUDA graph 回放），再轻装（FP8），最后少停几站（减少去噪步数）。</p>
+<p><strong>服务架构</strong>（§4.6.1、附录 K.5）：客户端-服务端。机器人客户端发相机历史、状态、指令；服务端返回动作块；客户端缓存后按控制器频率执行，同时请求下一块。</p>
+<p><strong>削减手段</strong>（L1446–L1460）：
+1. <strong>去掉重复计算</strong>：指令不变就复用文本特征；预计算时间步条件；纯动作的去噪步复用最近一次视频步的 K/V（第 2 章的 cached pass）；
+2. <strong>编译</strong>：视频编码器和 Transformer 编成 TensorRT 引擎，用 CUDA graph 回放；
+3. <strong>量化</strong>：支持的 checkpoint 上，选定的投影层和 FFN 层用 FP8（在机器人观测上校准）；
+4. <strong>少步</strong>：在成功率和平滑度允许时减少去噪步数；
+5. <strong>服务路径</strong>：流式和预取把视频编码挪到请求之前。</p>
+<p><strong>例子：G1 上 Turbo 的逐项瀑布</strong>（Fig. 19，500 次中位数，ms）：</p>
+<table>
+<thead>
+<tr>
+<th>累计改动</th>
+<th>RTX 5090</th>
+<th>Jetson Thor（120 W）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>基线（eager BF16 PyTorch）</td>
+<td>224.73</td>
+<td>720.41</td>
+</tr>
+<tr>
+<td>+ 运行时优化</td>
+<td>183.66</td>
+<td>614.53</td>
+</tr>
+<tr>
+<td>+ TensorRT</td>
+<td><strong>95.05</strong></td>
+<td><strong>256.12</strong></td>
+</tr>
+<tr>
+<td>+ CUDA graph</td>
+<td>90.01</td>
+<td>254.00</td>
+</tr>
+<tr>
+<td>+ FP8 混合精度</td>
+<td>54.79</td>
+<td>182.22</td>
+</tr>
+<tr>
+<td>+ 去噪步 2v4a → 1v2a</td>
+<td>38.40</td>
+<td>123.97</td>
+</tr>
+</tbody>
+</table>
+<p>TensorRT 一项在两张卡上都是最大的单项收益。</p>
+<p><strong>各本体汇总</strong>（Tab. 27，p50，ms）：</p>
+<table>
+<thead>
+<tr>
+<th>本体</th>
+<th>模型</th>
+<th>硬件</th>
+<th>基线</th>
+<th>优化后</th>
+<th>加速</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dexter（3 路、48 步动作、2v2a）</td>
+<td>GR00T 2</td>
+<td>RTX 5090</td>
+<td>449.20</td>
+<td>152.78</td>
+<td>2.94×</td>
+</tr>
+<tr>
+<td>Dexter</td>
+<td>GR00T 2</td>
+<td>DGX Station GB300</td>
+<td>219.02</td>
+<td>48.47</td>
+<td>4.52×</td>
+</tr>
+<tr>
+<td>G1（3 路、80 步、1v2a）</td>
+<td>Turbo</td>
+<td>RTX 5090</td>
+<td>224.73</td>
+<td>38.40</td>
+<td>5.85×</td>
+</tr>
+<tr>
+<td>G1</td>
+<td>Turbo</td>
+<td>Jetson Thor</td>
+<td>720.41</td>
+<td>123.97</td>
+<td>5.81×</td>
+</tr>
+<tr>
+<td>YAM（4 路、48 步、2v4a）</td>
+<td>GR00T 2</td>
+<td>RTX 5090</td>
+<td>550.96</td>
+<td>179.79</td>
+<td>3.06×</td>
+</tr>
+<tr>
+<td>YAM</td>
+<td>GR00T 2</td>
+<td>DGX Station GB300</td>
+<td>386.06</td>
+<td>54.00</td>
+<td>7.15×</td>
+</tr>
+</tbody>
+</table>
+<p><strong>怎么验证没削坏</strong>（附录 I.1）：先做数值比对（同观测、同初始噪声，和 eager BF16 比新生成动作的 MSE，排除 padding 和已承诺的 RTC 前缀），再仿真，最后真机——成功率、完成时间、动作平滑度一起看；"数值误差小"不等于"任务能成功"。</p>
+<p><strong>一句话</strong>：复用 → TensorRT → CUDA graph → FP8 → 少步，加速 2.9–7.2×；每一步都要过真机验收。</p>
+<h3 id="noisy-prefix-rtc2026-11-15">第二步：noisy-prefix RTC——让动作块接得上（2026-11-15）</h3>
+<p><strong>类比：接力跑交棒。</strong> 下一棒（新动作块）起跑时，上一棒（已承诺执行的动作）还在跑。如果下一棒不看上一棒，交棒会撞上（跳变）；如果下一棒死盯着上一棒的每一步，又会被带偏（照抄旧计划）。最好是"大致看着上一棒的节奏起跑"。</p>
+<p><strong>问题</strong>：推理有延迟 <span class="arithmatex">\(d\)</span>，机器人在这段时间里继续执行旧块。等待会中断运动；不管延迟、异步执行又会在块与块之间产生不连续（L1468–L1471）。</p>
+<p><strong>训练时 RTC</strong>（Black et al., 2025）：让每次预测以"已承诺执行的动作前缀"为条件。GR00T 2 发现<strong>干净前缀</strong>会让短延迟下成功率下降，于是用 <strong>noisy-prefix RTC</strong>：微调时给条件前缀加高斯噪声，减少对旧计划的依赖但保留连续所需的上下文；推理时用干净的已承诺动作（L1472–L1478）。只需在后训练策略上再微调 5k 步。</p>
+<p><strong>例子：效果</strong>（RoboDojo 8 个精细任务，模拟延迟，Tab. 28）：</p>
+<table>
+<thead>
+<tr>
+<th>延迟</th>
+<th>异步执行（同权重）</th>
+<th>干净前缀 RTC</th>
+<th>noisy-prefix RTC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>160 ms</td>
+<td>32.8%</td>
+<td>30.7%</td>
+<td><strong>34.8%</strong></td>
+</tr>
+<tr>
+<td>320 ms</td>
+<td>15.0%</td>
+<td>—</td>
+<td><strong>21.4%</strong></td>
+</tr>
+</tbody>
+</table>
+<p>平滑度：160 ms 下峰值指令 jerk（加加速度）降 69%；320 ms 下 95 分位跨块 jerk 降 87%（L1505–L1508）。</p>
+<p><strong>一句话</strong>：给"已承诺前缀"加噪训练、干净前缀推理，既连得上又不照抄旧计划。</p>
+<h3 id="2026-11-15_1">第三步：按阶段变速——比演示的人更快（2026-11-15）</h3>
+<p><strong>类比：开车，直道踩油门、弯道减速。</strong> 伸手、搬运可以快；抓取、拧螺丝不能快。</p>
+<p><strong>做法</strong>（§4.6.3、附录 I.3）：把任务拆成有语义的阶段（伸手、抓取、搬运、拧……），它们对加速的容忍度不同；一个 agent 评估加速后的 rollout，根据失败调整每阶段的速度表；部署时一个轻量的子任务预测器从当前观测预测动作块覆盖哪些阶段，按速度表对动作块重新定时；再做块间时间对齐和跨块 jerk 平滑。</p>
+<p><strong>例子：Tab. 29</strong>（Dexter，只算成功 episode 的平均完成时间）：</p>
+<table>
+<thead>
+<tr>
+<th>任务</th>
+<th>原速成功率</th>
+<th>加速成功率</th>
+<th>原速用时</th>
+<th>加速用时</th>
+<th>缩短</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>制作快递标签</td>
+<td>60%</td>
+<td>65%</td>
+<td>95 s</td>
+<td>81 s</td>
+<td>14.7%</td>
+</tr>
+<tr>
+<td>手电筒换电池</td>
+<td>55%</td>
+<td>60%</td>
+<td>80 s</td>
+<td>66 s</td>
+<td>17.5%</td>
+</tr>
+<tr>
+<td>粗盐过滤</td>
+<td>85%</td>
+<td>80%</td>
+<td>184 s</td>
+<td>137 s</td>
+<td>25.5%</td>
+</tr>
+</tbody>
+</table>
+<p>正文汇总为"缩短 15–26%"（L1728），成功率基本保持。</p>
+<p><strong>训练端的配套——数据加载</strong>（§4.7.2，L1558–L1580）：数据存 LanceDS（Lance 列式格式），每个数据集有 step / episode / media 三张表，版本化快照，质检规则离线算成"可用样本起点"视图；1,024 张 GB300 上每秒约 1.2 万个样本窗口，等数据平均 0.37 ms，只占 step 时间的 0.049%——部署和训练两头都在为"视频太重"买单。</p>
+<p><strong>一句话</strong>：按阶段给动作块重新定时，完成时间缩短 15–26%，机器人第一次可以比演示者更快。</p>
+<h3 id="_2">动画演示：一层层削延迟，再让相邻动作块接得上</h3>
+<p><img alt="一层层削延迟，再让相邻动作块接得上" src="../animations/10-latency-rtc.gif" /></p>
+<p>可交互版：<a href="../animations/10-latency-rtc.html">animations/10-latency-rtc.html</a>（▶ 播放、→ 单步、↺ 从头开始；硬件按钮：RTX 5090 / Jetson Thor）</p>
+<p><strong>怎么看</strong>：
+1. 上半部分每步亮一行 Fig. 19 的累计延迟，TensorRT 一行（橙色）缩得最多（第一步）。
+2. 下半部分依次画三种块交接：异步（接缝跳变）、干净前缀（贴着旧计划）、noisy-prefix（平滑接上又转向新目标）——曲线是示意（第二步）。</p>
+<h2 id="_3">练习与作答记录</h2>
+<p><strong>题 1</strong>（第一步 瀑布）：Jetson Thor 上，TensorRT 这一步省了多少 ms，占基线的百分之几？FP8 那一步呢？</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<p><strong>题 2</strong>（第二步 RTC）：为什么"干净前缀"反而降低成功率？用"照抄旧计划"的类比解释，并说出加噪为什么能缓解。</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<p><strong>题 3</strong>（第三步 变速）：粗盐过滤加速后成功率从 85% 降到 80%（20 次试验）。这算"保持"吗？用第 4 章的 SEM 粗估。</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<h2 id="_4">口诀</h2>
+<blockquote>
+<p>复用编译图回放，八位少步再预取；<br />
+交棒前缀加点噪，接得上又不照抄；<br />
+直道加速弯道慢，机器快过示范人。</p>
+</blockquote>
+<h2 id="_5">本章复习卡片</h2>
+<p>G22、G23（练习做完后，按答错、卡住的地方再补。）</p>
+<h2 id="_6">附录 · 延伸阅读</h2>
+<h3 id="_7">推荐阅读</h3>
+<table>
+<thead>
+<tr>
+<th>读什么</th>
+<th>读哪里</th>
+<th>读它为了什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>★ GR00T 2 白皮书</td>
+<td>§4.6 L1414–L1520</td>
+<td>本章原文</td>
+</tr>
+<tr>
+<td>★ GR00T 2 白皮书</td>
+<td>附录 I.1–I.3 L6867–L7122</td>
+<td>每个本体的服务配置、RTC 消融、变速</td>
+</tr>
+<tr>
+<td>Real-Time Chunking（Black et al., 2025）</td>
+<td><code>vla-deep-dive/materials/text/papers/real-time-chunking-2506.07339.txt</code></td>
+<td>RTC 原论文</td>
+</tr>
+<tr>
+<td>LeRobot RTC 文档</td>
+<td><code>vla-deep-dive/materials/code/lerobot/repo/docs/source/rtc.mdx</code></td>
+<td>开源实现</td>
+</tr>
+<tr>
+<td><code>pytorch-deep-dive</code> 讲义</td>
+<td>编译栈、CUDA graph 章</td>
+<td><code>torch.compile</code> / CUDA graph 原理</td>
+</tr>
+<tr>
+<td><code>cuda-programming</code> 讲义</td>
+<td>Tensor Core / FP8 章</td>
+<td>低精度矩阵乘</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_8">数学原理</h3>
+<ul>
+<li><strong>Jerk（加加速度）</strong>：位置的三阶导；动作块接缝处的跳变在 jerk 上最明显。</li>
+<li><strong>CUDA graph</strong>：把一串 kernel 启动录成一张图一次性回放，省掉 CPU 端逐个启动的开销。</li>
+<li><strong>FP8 校准</strong>：用代表性输入统计激活范围，选缩放因子，让 8 位能覆盖主要数值范围。</li>
+</ul>
+<h3 id="_9">公式清单</h3>
+<table>
+<thead>
+<tr>
+<th>公式</th>
+<th>意思</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>加速比 = 基线延迟 / 优化后延迟</td>
+<td>Tab. 27</td>
+</tr>
+<tr>
+<td>缩短比例 = (原用时 − 加速用时) / 原用时</td>
+<td>Tab. 29</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_10">代码对照</h3>
+<p>本章暂无代码对照：可在本机用一个小 DiT 复现"eager → torch.compile → CUDA graph"的延迟瀑布（MPS 上无 CUDA graph，标 <code>[GPU]</code>）。</p><nav class="pager"><a href="09-evaluation.html">← 第 9 章 · 评测：盲测 A/B、Bradley-Terry Elo 和会说真话的仿真</a><a href="11-open-problems.html">第 11 章 · 开放问题：作者自己说还不知道的事 →</a></nav>
+</main>
+<footer>来自个人学习仓库的对话讲义，含练习作答记录。源码：<a href="https://github.com/wikieden/reading-gr00t2">github.com/wikieden/reading-gr00t2</a></footer>
+</body></html>

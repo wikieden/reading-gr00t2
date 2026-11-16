@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>人形三层控制频率</title><link rel="stylesheet" href="anim.css"></head>
+<body><main>
+<h1>第 8 章 · Turbo 一秒想一次，SONIC 每 20 ms 走一格</h1>
+<p class="sub">配套讲义：<a href="../lessons/08-humanoid.html">第 8 章 · 人形全身：Turbo 想动作，SONIC 保平衡</a>。S1 每 1 s 发起一次推理，产出 1.6 s 的动作块（80 个 SONIC token）；推理延迟过后新块才可用；S0 以 50 Hz 从最新可用块里取 token，关节 PD 再以 1000 Hz 跟踪。</p>
+<div class="panel"><svg id="sv" viewBox="0 0 680 330"></svg></div>
+<div class="stats">
+<div class="stat"><div class="l">时间</div><div class="v" id="st">0.00 s</div></div>
+<div class="stat"><div class="l">S0 正在执行</div><div class="v" id="sc">—</div></div>
+<div class="stat"><div class="l">新块到达时旧块还剩</div><div class="v" id="sm">—</div></div>
+</div>
+<div class="row ctl"><label>S1 推理延迟 <b id="lv">124</b> ms（Jetson Thor 实测 124）</label><input id="l" type="range" min="40" max="500" step="10" value="124"></div>
+<div class="row"><button id="play">▶ 播放</button><button id="step">→ 单步</button><button id="reset">↺ 从头开始</button></div>
+<p class="note">看点：每个彩色长条是一个 1.6 s 动作块，前面浅色那段是推理时间（块还不能用）；相邻块重叠，新块一到 S0 就切过去（竖线）。黑色游标是 S0 当前取的那一格，每格 20 ms；底部细刻度是 1000 Hz 的 PD。只要新块在旧块用完之前到，动作就不会断。</p>
+</main>
+<script src="anim.js"></script>
+<script>
+const sv=$('sv');const X0=60,W=600,T=4.2,xs=t=>X0+t/T*W;const cols=['var(--accent)','var(--warm)','var(--teal)','var(--purple)','var(--amber)'];
+for(let t=0;t<=4;t+=0.5){el('line',{x1:xs(t),y1:40,x2:xs(t),y2:270,stroke:'var(--line)','stroke-dasharray':'2 3'},sv);txt(t.toFixed(1)+'s',{x:xs(t)-10,y:290,class:'m'},sv)}
+txt('S1 块',{x:10,y:60,class:'m'},sv);txt('S0 50 Hz',{x:10,y:236,class:'m'},sv);txt('PD 1 kHz',{x:10,y:262,class:'m'},sv);
+const bg=el('g',{},sv),cur=el('g',{},sv);
+let k,L,chunks,swaps;const DT=0.04;
+function reset(){k=0;L=+$('l').value/1000;chunks=[];for(let i=0;i<5;i++)chunks.push({s:i,r:i+L,e:i+1.6,c:cols[i%5]});swaps=chunks.map(c=>c.r);
+  clear(bg);chunks.forEach((c,i)=>{const y=44+i*34;if(c.s>T)return;
+    el('rect',{x:xs(c.s),y,width:xs(Math.min(c.r,T))-xs(c.s),height:24,fill:c.c,opacity:.25},bg);
+    el('rect',{x:xs(c.r),y,width:xs(Math.min(c.e,T))-xs(c.r),height:24,fill:c.c,opacity:.8},bg);
+    txt('第 '+(i+1)+' 块 · 80 token',{x:xs(c.r)+4,y:y+16,class:'m'},bg);
+    if(c.r>0&&c.r<T)el('line',{x1:xs(c.r),y1:y-4,x2:xs(c.r),y2:248,stroke:c.c,'stroke-width':1.5},bg)});
+  for(let t=0;t<T;t+=0.02)el('line',{x1:xs(t),y1:224,x2:xs(t),y2:232,stroke:'var(--muted)','stroke-width':.6},bg);
+  for(let t=0;t<T;t+=0.005)el('line',{x1:xs(t),y1:254,x2:xs(t),y2:257,stroke:'var(--line)','stroke-width':.4},bg);
+  $('sm').textContent=(1.6-1-L).toFixed(2)+' s';draw()}
+function active(t){let a=null;chunks.forEach((c,i)=>{if(c.r<=t&&t<c.e)a=i});return a}
+function draw(){clear(cur);const t=k*DT;el('line',{x1:xs(t),y1:36,x2:xs(t),y2:270,stroke:'var(--text)','stroke-width':2},cur);
+  const a=active(t);$('st').textContent=t.toFixed(2)+' s';
+  if(a===null){$('sc').textContent='（第 1 块还在推理）'}else{const idx=Math.floor((t-chunks[a].s)/0.02);$('sc').textContent='第 '+(a+1)+' 块第 '+Math.min(idx+1,80)+' 格';
+    el('rect',{x:xs(t)-2,y:220,width:6,height:16,fill:chunks[a].c},cur)}}
+function next(){if((k+1)*DT>4.0)return false;k++;draw();return true}
+$('l').oninput=()=>{$('lv').textContent=$('l').value;ANIM.stop();ANIM.reset(1)};
+setupPlayer({captureSeed:1,reset,next},120);
+</script></body></html>

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>盲测 A/B 拟合 Elo</title><link rel="stylesheet" href="anim.css"></head>
+<body><main>
+<h1>第 9 章 · 一场场盲测 A/B，怎么收敛成一张 Elo 排行榜</h1>
+<p class="sub">配套讲义：<a href="../lessons/09-evaluation.html">第 9 章 · 评测：盲测 A/B、Bradley-Terry Elo 和会说真话的仿真</a>。模拟：三个 checkpoint 的"真实" Elo 设成白皮书 Tab. 13 的分差（π0.5 → GR00T 1.7 +141 → GR00T 2 +95）；每一步是一次三方同场试验，每对按 Bradley-Terry 概率决出胜负；每步后用式 (5) 的 MM 迭代重新拟合。</p>
+<div class="panel"><svg id="sv" viewBox="0 0 680 360"></svg></div>
+<div class="stats">
+<div class="stat"><div class="l">试验 / 成对比较</div><div class="v" id="sn">0 / 0</div></div>
+<div class="stat"><div class="l">估计 Elo 差（GR00T 2 − π0.5）</div><div class="v" id="sd">—</div></div>
+<div class="stat"><div class="l">真实分差</div><div class="v">236</div></div>
+</div>
+<div class="row"><button id="play">▶ 播放</button><button id="step">→ 单步</button><button id="reset">↺ 换一批随机结果</button></div>
+<p class="note">看点：三条曲线是拟合出的 Elo 随比较次数的变化，虚线是真实值。刚开始几场时估计乱跳（每个 checkpoint 只和锚点打了一场虚拟平局，所以不会跑到无穷大）；比较越多越靠近虚线。真实 GearArena 还会按任务归一化、按任务做 bootstrap 给区间——这里只演示拟合本身。</p>
+</main>
+<script src="anim.js"></script>
+<script>
+const sv=$('sv');const names=['π0.5','GR00T 1.7','GR00T 2'],trueE=[1400,1541,1636],cols=['var(--muted)','var(--warm)','var(--accent)'];
+const X0=60,W=500,Y0=30,H=280,lo=1300,hi=1750,NSAMP=60;const xs=i=>X0+i/NSAMP*W,ys=e=>Y0+H-(clamp(e,lo,hi)-lo)/(hi-lo)*H;
+el('rect',{x:X0,y:Y0,width:W,height:H,fill:'var(--bg)',stroke:'var(--line)'},sv);
+[1350,1450,1550,1650,1750].forEach(e=>{el('line',{x1:X0,y1:ys(e),x2:X0+W,y2:ys(e),stroke:'var(--line)','stroke-dasharray':'2 3'},sv);txt(String(e),{x:X0-40,y:ys(e)+4,class:'m'},sv)});
+txt('试验次数 →',{x:X0+W-70,y:Y0+H+20,class:'m'},sv);
+const meanT=trueE.reduce((a,b)=>a+b)/3;
+const C=names.map((n,i)=>{const tE=trueE[i]-meanT+1500;el('line',{x1:X0,y1:ys(tE),x2:X0+W,y2:ys(tE),stroke:cols[i],'stroke-dasharray':'6 4',opacity:.7},sv);
+  return{pl:el('polyline',{fill:'none',stroke:cols[i],'stroke-width':2},sv),lab:txt(n,{x:X0+W+8,y:ys(tE)+4},sv),pts:[]}});
+let k,W3,Nij,nc;
+const P=(a,b)=>1/(1+Math.pow(10,-(a-b)/400));
+function fit(){let p=[1,1,1];for(let it=0;it<200;it++){p=p.map((pi,i)=>{let w=W3[i]+0.5,d=1/(pi+1);for(let j=0;j<3;j++)if(j!==i&&Nij[i][j])d+=Nij[i][j]/(pi+p[j]);return w/d})}
+  const g=Math.exp(p.reduce((a,b)=>a+Math.log(b),0)/3);return p.map(v=>1500+400*Math.log10(v/g))}
+function reset(sd){seed(sd);k=0;nc=0;W3=[0,0,0];Nij=[[0,0,0],[0,0,0],[0,0,0]];C.forEach(c=>{c.pts=[];c.pl.setAttribute('points','')});
+  $('sn').textContent='0 / 0';$('sd').textContent='—'}
+function next(){if(k>=NSAMP)return false;
+  for(let i=0;i<3;i++)for(let j=i+1;j<3;j++){const iw=rnd()<P(trueE[i],trueE[j]);W3[iw?i:j]++;Nij[i][j]++;Nij[j][i]++;nc++}
+  k++;const E=fit();C.forEach((c,i)=>{c.pts.push(xs(k)+','+ys(E[i]));c.pl.setAttribute('points',c.pts.join(' '))});
+  $('sn').textContent=k+' / '+nc;$('sd').textContent=(E[2]-E[0]>0?'+':'')+(E[2]-E[0]).toFixed(0);return true}
+setupPlayer({captureSeed:9,reset,next},160);
+</script></body></html>

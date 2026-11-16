@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CPS 探索与带记忆基线</title><link rel="stylesheet" href="anim.css"></head>
+<body><main>
+<h1>第 6 章 · CPS 让去噪能探索，带记忆的基线让全对的组也有信号</h1>
+<p class="sub">配套讲义：<a href="../lessons/06-rl-post-training.html">第 6 章 · RL 后训练：让会做的事做得更稳</a>。左：一维玩具，12 条轨迹<b>从同一个初始噪声</b>出发，噪声表 σ = 1 → 0.75 → 0.5 → 0.25 → 0，按附录 F 式 (10)(11) 采样；玩具模型眼中的干净动作 = 2 + 0.3 × 当前 latent（真实模型的预测也随输入变）。右：讲义第二步的例子（m=0.5，h=2，4 次回报 1,1,1,0）。</p>
+<div class="panel"><svg id="sv" viewBox="0 0 680 400"></svg></div>
+<div class="stats">
+<div class="stat"><div class="l">去噪步</div><div class="v" id="sk">0 / 4</div></div>
+<div class="stat"><div class="l">终点散布（12 条的极差，同一初始噪声）</div><div class="v" id="sr">—</div></div>
+</div>
+<div class="row ctl"><label>探索强度 η = <b id="ev">0.5</b></label><input id="e" type="range" min="0" max="1" step="0.1" value="0.5"></div>
+<div class="row"><button id="play">▶ 播放</button><button id="step">→ 单步</button><button id="reset">↺ 从头开始</button></div>
+<p class="note">看点：η = 0 时去噪是确定的，同一个初始噪声走出的 12 条轨迹完全重合成一条——没法探索；η 越大，每一步额外加的高斯越大，轨迹散开、终点不同——这就是 RL 需要的"同一情境下试试别的动作"，而且每一步都是显式高斯，能算概率。噪声只加在动作上，视频去噪不变。右边：普通 GRPO 若 4 次全成功，优势全为 0；掺入历史均值后，基线降到 m 和组内均值之间，成功仍被奖励。</p>
+</main>
+<script src="anim.js"></script>
+<script>
+const sv=$('sv');const S=[1,0.75,0.5,0.25,0],X0=50,W=330,Y0=40,H=300,lo=-3,hi=4;
+const ys=v=>Y0+H-(clamp(v,lo,hi)-lo)/(hi-lo)*H,xs=k=>X0+k/4*W;
+el('rect',{x:X0,y:Y0,width:W,height:H,fill:'var(--bg)',stroke:'var(--line)'},sv);
+[-2,0,2,4].forEach(v=>{el('line',{x1:X0,y1:ys(v),x2:X0+W,y2:ys(v),stroke:'var(--line)','stroke-dasharray':'2 3'},sv);txt(String(v),{x:X0-22,y:ys(v)+4,class:'m'},sv)});
+S.forEach((s,k)=>txt('σ='+s,{x:xs(k)-14,y:Y0+H+18,class:'m'},sv));
+
+txt('动作 latent',{x:X0,y:Y0-10,class:'m'},sv);
+const g=el('g',{},sv);
+const BX=420;txt('带记忆的组相对基线',{x:BX,y:30},sv);
+txt('m_g = 0.5，h_g = 2，N_g = 4',{x:BX,y:52,class:'m'},sv);
+const R=[1,1,1,0];const rowsB=R.map((r,i)=>{const y=70+i*52;el('rect',{x:BX,y,width:240,height:42,rx:6,fill:'var(--bg)',stroke:'var(--line)'},sv);
+  return{a:txt('',{x:BX+10,y:y+18},sv),b:txt('',{x:BX+10,y:y+35,class:'m'},sv)}});
+const cmp=txt('',{x:BX,y:300,class:'m'},sv),cmp2=txt('',{x:BX,y:318,class:'m'},sv);
+let k,tr,eta,shown;
+function reset(sd){seed(sd);k=0;shown=0;eta=+$('e').value;tr=[];const a0=gauss();for(let i=0;i<12;i++)tr.push([a0]);
+  rowsB.forEach(r=>{r.a.textContent='';r.b.textContent=''});cmp.textContent='';cmp2.textContent='';draw()}
+function step1(){const s=S[k],s1=S[k+1];tr.forEach(t=>{const a=t[t.length-1];const ad=2+0.3*a;const ep=(a-(1-s)*ad)/s;
+  const mu=(1-s1)*ad+s1*Math.cos(eta*Math.PI/2)*ep;let sd=s1*Math.sin(eta*Math.PI/2);if(eta>0)sd=clamp(sd,0.01,1);
+  t.push(mu+sd*gauss())});k++}
+function next(){if(k<4){step1();draw();return true}
+  if(shown<4){const i=shown,h=2,m=0.5,N=4;const others=R.reduce((a,b,j)=>a+(j===i?0:b),0);const b=(h*m+others)/(h+N-1);
+    rowsB[i].a.textContent='第 '+(i+1)+' 次：R = '+R[i];rowsB[i].b.textContent='b = (2×0.5+'+others+')/5 = '+b.toFixed(1)+'，A = '+(R[i]-b>0?'+':'')+(R[i]-b).toFixed(1);
+    shown++;if(shown===4){cmp.textContent='若本轮 4 次全成功：普通 GRPO 优势 = 0；';cmp2.textContent='带记忆：b = (1 + 3) / 5 = 0.8，A = +0.2'}return true}
+  return false}
+function draw(){clear(g);tr.forEach(t=>{el('polyline',{points:t.map((v,i)=>xs(i)+','+ys(v)).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':1.2,opacity:.75},g);
+  el('circle',{cx:xs(t.length-1),cy:ys(t[t.length-1]),r:3,fill:'var(--warm)'},g)});
+  $('sk').textContent=k+' / 4';if(k===4){const e=tr.map(t=>t[4]);$('sr').textContent=(Math.max(...e)-Math.min(...e)).toFixed(2)}else $('sr').textContent='—'}
+$('e').oninput=()=>{$('ev').textContent=$('e').value;ANIM.stop();ANIM.reset(Date.now())};
+setupPlayer({captureSeed:4,reset,next},900);
+</script></body></html>

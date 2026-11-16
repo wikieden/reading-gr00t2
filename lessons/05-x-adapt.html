@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>第 5 章 · X-Adapt：不遥操作，也能教机器人新任务 · 读懂 GR00T 2</title>
+<style>
+:root{--bg:#fbfbfa;--fg:#1f2328;--mute:#5d6470;--line:#e3e5e8;--card:#fff;--acc:#2f6fdf;--code:#f2f3f5;--quote:#f4f6fa}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181d;--fg:#e4e7ec;--mute:#9aa3b2;--line:#2c323b;--card:#1c2026;--acc:#7aa7ff;--code:#22272f;--quote:#1b2029}}
+:root[data-theme="dark"]{--bg:#15181d;--fg:#e4e7ec;--mute:#9aa3b2;--line:#2c323b;--card:#1c2026;--acc:#7aa7ff;--code:#22272f;--quote:#1b2029}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.75 -apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",sans-serif}
+a{color:var(--acc)}
+header.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+header.top .in{max-width:860px;margin:0 auto;padding:10px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:14px}
+header.top .brand{font-weight:600;color:var(--fg);text-decoration:none;margin-right:auto}
+header.top a{text-decoration:none}
+main{max-width:860px;margin:0 auto;padding:24px 16px 72px;overflow-wrap:anywhere}
+h1{font-size:28px;line-height:1.35;margin:8px 0 16px} h2{font-size:22px;margin:40px 0 12px;padding-top:8px;border-top:1px solid var(--line)} h3{font-size:18px;margin:28px 0 8px}
+img{max-width:100%;height:auto;border-radius:8px;border:1px solid var(--line);background:#fff}
+blockquote{margin:16px 0;padding:10px 16px;background:var(--quote);border-left:3px solid var(--acc);border-radius:4px;color:var(--mute)}
+blockquote p{margin:4px 0}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:var(--code);padding:12px 14px;border-radius:8px;overflow-x:auto} pre code{padding:0;background:none}
+table{border-collapse:collapse;display:block;overflow-x:auto;max-width:100%;margin:12px 0;font-size:15px}
+th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top} th{background:var(--code)}
+details{border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin:8px 0;background:var(--card)}
+details[open]{padding-bottom:10px} summary{cursor:pointer;color:var(--acc);font-weight:500}
+mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+.btn{display:inline-block;margin:4px 8px 4px 0;padding:6px 14px;border:1px solid var(--acc);border-radius:999px;text-decoration:none;font-size:14px}
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin:16px 0}
+.card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;color:inherit;text-decoration:none}
+.card:hover{border-color:var(--acc)} .card img{border:0;border-bottom:1px solid var(--line);border-radius:0;aspect-ratio:16/10;object-fit:contain;width:100%}
+.card .no{color:var(--mute);font-size:13px;padding:8px 12px 0} .card .t{padding:0 12px 12px;font-weight:500;line-height:1.5}
+.lead{font-size:17px;color:var(--mute)}
+footer{max-width:860px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font-size:13px}
+</style>
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"],["$$","$$"]],processEscapes:true,processEnvironments:true}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+</head><body>
+<header class="top"><div class="in">
+<a class="brand" href="../index.html">读懂 GR00T 2</a>
+<a href="../lessons/index.html">讲义目录</a>
+<a href="../animations/index.html">动画</a>
+<a href="../review.html">复习卡片</a>
+<a href="../lessons/appendix-glossary.html">缩写表</a>
+</div></header>
+<main>
+<h1 id="5-x-adapt">第 5 章 · X-Adapt：不遥操作，也能教机器人新任务</h1><p><a class="btn" href="../animations/05-x-adapt-ablation.html">▶ 打开本章可交互动画</a></p>
+<blockquote>
+<p>本章回答：一个任务只在人手、手持夹爪或外骨骼上演示过，从没在目标机器人上遥操作过，GR00T 2 怎么学会在机器人上做？哪些差距靠预处理消掉，哪些靠模型自己补？<br />
+讲解日期：2026-11-15 · 上一章：<a href="../lessons/04-data-mixture.html">第 4 章 数据配方</a> · 下一章：<a href="../lessons/06-rl-post-training.html">第 6 章 RL 后训练</a><br />
+对应原文：<code>materials/text/gr00t2-whitepaper.txt</code> §1 L143–L154；§3.2 L484–L528；§4.4 L1098–L1277；附录 B.1 L2648、E.3 Tab. 17 L4855–L4880；Tab. 4 L3054–L3069<br />
+本章缩写：UMI = Universal Manipulation Interface（通用 / 操作 / 接口）；DexUMI = Dexterous UMI（灵巧 / UMI，外骨骼）；IK = Inverse Kinematics（逆 / 运动学）；DoF = Degrees of Freedom（自由度）；RL = Reinforcement Learning（强化 / 学习）；NIST = National Institute of Standards and Technology（美国国家 / 标准 / 与技术 / 研究院，这里指它的装配测试板）。全部缩写见 <a href="../lessons/appendix-glossary.html">附录 · 缩写与术语表</a></p>
+</blockquote>
+<h2 id="_1">讲解</h2>
+<h3 id="2026-11-15">第一步：一个配方——演示定任务，玩耍数据定身体（2026-11-15）</h3>
+<p><strong>类比：看视频学菜 + 熟悉自家厨房。</strong> 一道新菜你只在别人厨房的视频里见过（演示定义"做什么"）；你自己的厨房你很熟，虽然从没在里面做过这道菜（目标机器人的"无任务玩耍数据"定义"用什么身体"）；你学过很多厨房、很多菜（跨本体预训练）把两者接上。</p>
+<p>白皮书原话：<em>"Demonstrations recorded without the robot specify the task, task-agnostic play data from the target robot specify the embodiment, and cross-embodiment pretraining connects the two."</em>（L496–L497）</p>
+<p><strong>公式（用第 1 章的拆法读）。</strong></p>
+<div class="arithmatex">\[p(o_{t+1:t+F},a\mid c)=\underbrace{p(o_{t+1:t+F}\mid c)}_{\text{任务怎么展开：从人/UMI 演示学}}\cdot\underbrace{p(a\mid o_{t+1:t+F},c)}_{\text{这副身体怎么做到：从目标机器人玩耍数据学}}\]</div>
+<p>第一项需要"这个任务的画面"，第二项需要"这个机器人的动作"——两者可以来自<strong>不同</strong>的数据。</p>
+<p><strong>例子：Fig. 14 的真实现象</strong>（L1184–L1188）。同一个 YAM 顶视相机起始帧，预测"玩具翻斗车组装"的未来 8 步：</p>
+<table>
+<thead>
+<tr>
+<th>训练数据</th>
+<th>想象出的画面里</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>只有 UMI 演示</td>
+<td>人的手臂 + 蓝色 UMI 夹爪</td>
+</tr>
+<tr>
+<td>UMI 演示 + YAM 无任务数据</td>
+<td><strong>YAM 自己的机械臂</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>没有跨本体预训练会怎样</strong>（Tab. 4 / Tab. 17，UMI → YAM，10 次试验）：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>翻斗车 SR</th>
+<th>NIST 板 SR</th>
+<th>传送带分拣（50 件里分对的比例）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GR00T 2（预训练含 UMI-10K）</td>
+<td>60</td>
+<td>50</td>
+<td>86</td>
+</tr>
+<tr>
+<td>GR00T 2 不含 UMI 预训练</td>
+<td>20</td>
+<td>0</td>
+<td>34</td>
+</tr>
+<tr>
+<td>π0.5 / LingBot-VA / GR00T 1.7</td>
+<td>0 / 0 / 0</td>
+<td>0 / 0 / 0</td>
+<td>0 / 0 / 28</td>
+</tr>
+</tbody>
+</table>
+<p><strong>一句话</strong>：任务从"没有机器人的演示"里学，身体从"没有任务的机器人数据"里学，靠跨本体预训练和联合想象接起来。</p>
+<h3 id="2026-11-15_1">第二步：四条路线，各消掉什么差距（2026-11-15）</h3>
+<p><strong>类比：把外地菜谱改成本地菜谱。</strong> 能统一的先统一（换算单位、调到本地灶台的火候），剩下的"手感"让学徒自己补。</p>
+<p>白皮书的分法：采集和转换先消掉<strong>能消掉的</strong>——相机几何、运动学、动作语义；剩下的交给 GR00T 2（L1103–L1123）。</p>
+<table>
+<thead>
+<tr>
+<th>路线</th>
+<th>采集设备</th>
+<th>预处理消掉的差距</th>
+<th>还需要目标机器人玩耍数据吗</th>
+<th>结果</th>
+<th>原文</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>人 → Dexter（7-DoF 臂 + 22-DoF Sharpa 手）</td>
+<td>头 + 腕 GMSL 相机放在机器人对应位姿；PICO 腕部 6-DoF 追踪；Manus 手套</td>
+<td>闭式 IK 离线重定向到臂和手，<strong>指尖对指尖</strong>保持捏合几何；视频<strong>不改</strong></td>
+<td>是，1:1 采样一池共用玩耍数据</td>
+<td>滤纸 65%、显微镜载玻片涂抹 60%、传送带抛包裹 65%（基线为 0）；有一个任务零遥操作就胜过收了 10 条遥操作、但没有跨本体预训练的基线</td>
+<td>L1127–L1136</td>
+</tr>
+<tr>
+<td>UMI → YAM</td>
+<td>GEAR UMI 手持夹爪（腕相机 + 宽度编码器）</td>
+<td>鱼眼腕视图<strong>重渲染</strong>成 YAM 腕相机视角；动作改写到 YAM 动作空间，用 YAM 的动作头</td>
+<td>是</td>
+<td>翻斗车 60%、NIST 板 50%、传送带 86%；10–20 条就能端到端成功</td>
+<td>L1198–L1210</td>
+</tr>
+<tr>
+<td>DexUMI → XHAND</td>
+<td>外骨骼一比一复刻 XHAND 16 个关节、接触面、腕相机、触觉格式</td>
+<td>外骨骼绿色部件按颜色分割、外观随机化；指尖力投影成关节力矩加进动作</td>
+<td><strong>否</strong>（外骨骼就是这只手）</td>
+<td>香蕉酸奶、燕麦、划火柴 60–80%，基线全 0</td>
+<td>L1212–L1261</td>
+</tr>
+<tr>
+<td>人类视频 → 仿真 → 真机</td>
+<td>单段人类视频</td>
+<td>Video to Data 重建物体和手物运动 → CHORD 在仿真训状态型 RL 专家 → 扰动 + 视觉随机化渲染 1.5k 条</td>
+<td>否（全是仿真数据）</td>
+<td>敲钉子 9/10</td>
+<td>L1268–L1277</td>
+</tr>
+</tbody>
+</table>
+<p><strong>UMI → YAM 的三条发现</strong>（L1204–L1210）：① 和 YAM 无任务数据联合训练，外观和场景差距就补上了；② 模型<strong>吸收外观、不吸收几何</strong>——所以腕视图必须按 YAM 相机重渲染，但视场和朝向大致对齐即可；③ 手持动作要改写进 YAM 的动作空间、由 YAM 的动作头解码。</p>
+<p><strong>例子：消融看哪一步最要紧</strong>（Tab. 17，翻斗车 SR / NIST SR / 传送带 SR）：</p>
+<table>
+<thead>
+<tr>
+<th>改动（其余保持默认）</th>
+<th>翻斗车</th>
+<th>NIST</th>
+<th>传送带</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>默认（共享动作头、按 YAM 重渲染腕视图、全部 UMI 数据、含 UMI 预训练）</td>
+<td>60</td>
+<td>50</td>
+<td>86</td>
+</tr>
+<tr>
+<td>腕视图<strong>随机</strong>变形</td>
+<td>0</td>
+<td>0</td>
+<td>60</td>
+</tr>
+<tr>
+<td>腕视图<strong>不处理</strong></td>
+<td>0</td>
+<td>0</td>
+<td>46</td>
+</tr>
+<tr>
+<td>UMI 数据减半</td>
+<td>30</td>
+<td>0</td>
+<td>84</td>
+</tr>
+<tr>
+<td>UMI 数据 1/4</td>
+<td>10</td>
+<td>0</td>
+<td>70</td>
+</tr>
+<tr>
+<td>不含 UMI 预训练</td>
+<td>20</td>
+<td>0</td>
+<td>34</td>
+</tr>
+<tr>
+<td>UMI 用<strong>单独</strong>动作头</td>
+<td>10</td>
+<td>60</td>
+<td>64</td>
+</tr>
+</tbody>
+</table>
+<p>腕视图几何不对齐，两个长程任务直接归零——印证了"吸收外观、不吸收几何"。</p>
+<p><strong>一句话</strong>：几何（相机位姿）和动作语义必须手工对齐，外观差距交给联合训练；对齐做不好，再多数据也没用。</p>
+<h3 id="dexumi-2026-11-15">第三步：力从哪里来——DexUMI 的柔顺动作（2026-11-15）</h3>
+<p><strong>类比：不仅记下"手指放哪"，还记下"按多重"。</strong> 切香蕉、划火柴光有位置不够，要知道用多大力；而且位置有误差时，手要"软"一点才不会把东西捏碎或滑脱。</p>
+<p><strong>做法</strong>（L1255–L1259，沿用 Adaptive Compliance Policy）：把外骨骼记录的指尖力 <span class="arithmatex">\(f\)</span> 经雅可比转置投影成关节力矩 <span class="arithmatex">\(\tau\)</span>，加进动作向量；执行时，预测的 <span class="arithmatex">\(\tau\)</span> 用来<strong>降低该关节刚度</strong>并<strong>偏移位置目标</strong>，让手施加预测的力、对位置误差更鲁棒。</p>
+<div class="arithmatex">\[\tau=J^\top f,\qquad q_{\text{target}}'=q_{\text{target}}+\frac{\tau}{k'}\]</div>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>读法</th>
+<th>意思</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(f\)</span></td>
+<td>"f"</td>
+<td>指尖力（f = force）</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(J^\top\)</span></td>
+<td>"J 转置"</td>
+<td>手指运动学雅可比的转置，把末端力映射成关节力矩</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\tau\)</span></td>
+<td>"tau"</td>
+<td>关节力矩</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(k'\)</span></td>
+<td>"k 撇"</td>
+<td>降低后的关节刚度（k = stiffness 常数）</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><span class="arithmatex">\(q_{\text{target}}'=q_{\text{target}}+\tau/k'\)</span> 是按"弹簧模型下施加力矩 <span class="arithmatex">\(\tau\)</span> 需要的位置偏移"写的示意，白皮书正文只描述了"降刚度 + 偏移目标"，没给公式（细节在附录 B.3）。</p>
+</blockquote>
+<p><strong>例子（编的单关节数）。</strong> 想让一个手指关节压出 <span class="arithmatex">\(\tau=0.2\)</span> N·m，刚度从 10 降到 <span class="arithmatex">\(k'=4\)</span> N·m/rad：位置目标往物体里偏 <span class="arithmatex">\(0.2/4=0.05\)</span> rad（约 2.9°）。物体真实位置偏了 0.02 rad 时，实际力矩只差 <span class="arithmatex">\(4\times0.02=0.08\)</span> N·m；若刚度还是 10，会差 0.2 N·m——软一点更不怕位置误差。</p>
+<p><strong>一句话</strong>：DexUMI 把力也当动作学，执行时用"软"关节施力，对位置误差更宽容；这是 GR00T 2 目前唯一处理力的地方（力只作输出，不作输入，见第 11 章）。</p>
+<h3 id="_2">动画演示：演示定任务、玩耍定身体：哪一步不能省</h3>
+<p><img alt="演示定任务、玩耍定身体：哪一步不能省" src="../animations/05-x-adapt-ablation.gif" /></p>
+<p>可交互版：<a href="../animations/05-x-adapt-ablation.html">animations/05-x-adapt-ablation.html</a>（▶ 播放、→ 单步、↺ 从头开始；无参数，可单步）</p>
+<p><strong>怎么看</strong>：
+1. 顶部是配方：UMI 演示定"做什么"、YAM 玩耍数据定"身体"、跨本体预训练接起来（第一步）。
+2. 下面逐行亮 Tab. 17 的消融：腕视图几何不对齐时两个长程任务归零（第二步"吸收外观、不吸收几何"）。</p>
+<h2 id="_3">练习与作答记录</h2>
+<p><strong>题 1</strong>（第一步 配方）：按配方，要在 Dexter 上教一个只有人类演示的新任务，需要准备哪两类数据？哪一类可以所有新任务共用？</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<p><strong>题 2</strong>（第二步 消融）：Tab. 17 里"UMI 用单独动作头"在 NIST 板上反而更好（60 vs 50）。结合"共享头让 UMI 动作被 YAM 的解码器先验约束"这一点，猜一猜为什么？</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<p><strong>题 3</strong>（第三步 柔顺）：在第三步的例子里，如果刚度降到 <span class="arithmatex">\(k'=2\)</span>，为压出 0.2 N·m 位置目标要偏多少？位置误差 0.02 rad 时力矩误差多大？</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<h2 id="_4">口诀</h2>
+<blockquote>
+<p>演示定做啥，玩耍定身体，预训练来牵线；<br />
+几何必须手对齐，外观交给模型补；<br />
+力当动作软关节，捏得稳也不怕偏。</p>
+</blockquote>
+<h2 id="_5">本章复习卡片</h2>
+<p>G11、G12（练习做完后，按答错、卡住的地方再补。）</p>
+<h2 id="_6">附录 · 延伸阅读</h2>
+<h3 id="_7">推荐阅读</h3>
+<table>
+<thead>
+<tr>
+<th>读什么</th>
+<th>读哪里</th>
+<th>读它为了什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>★ GR00T 2 白皮书</td>
+<td>§4.4 L1098–L1277</td>
+<td>四条路线的原文</td>
+</tr>
+<tr>
+<td>★ GR00T 2 白皮书</td>
+<td>附录 E.3 L4675 起（Tab. 15–17）</td>
+<td>UMI → YAM 的差距与消融</td>
+</tr>
+<tr>
+<td>GR00T 2 白皮书</td>
+<td>附录 B.1 L2648 起</td>
+<td>人 → Dexter 的采集、重定向、联合训练细节</td>
+</tr>
+<tr>
+<td>GR00T 2 白皮书</td>
+<td>附录 B.3、E.4–E.6</td>
+<td>DexUMI 硬件与柔顺配方</td>
+</tr>
+<tr>
+<td>UMI（Chi et al., 2024）、DexUMI（Xu et al., 2025）、Adaptive Compliance Policy（Hou et al., 2025）</td>
+<td>全文（待下载）</td>
+<td>设备与柔顺控制原论文</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_8">数学原理</h3>
+<ul>
+<li><strong>逆运动学重定向</strong>：给定末端（指尖）目标，解关节角；闭式解每秒可解约 11.8 万次双手（L1132–L1133）。</li>
+<li><strong>雅可比转置</strong>：<span class="arithmatex">\(\tau=J^\top f\)</span> 是虚功原理的结果。</li>
+<li><strong>阻抗 / 柔顺控制</strong>：关节像弹簧，<span class="arithmatex">\(\tau=k(q_{\text{target}}-q)\)</span>，刚度越低越"软"。</li>
+</ul>
+<h3 id="_9">公式清单</h3>
+<table>
+<thead>
+<tr>
+<th>公式</th>
+<th>意思</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(p(o',a\mid c)=p(o'\mid c)\,p(a\mid o',c)\)</span></td>
+<td>第一项从演示学任务，第二项从玩耍数据学身体</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\tau=J^\top f\)</span></td>
+<td>指尖力 → 关节力矩</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\tau=k(q_{\text{target}}-q)\)</span></td>
+<td>关节弹簧模型</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_10">代码对照</h3>
+<p>本章暂无代码对照：G2-M1/M2（玩具 WAM、无标签视频消融）完成后补 <code>ch05_x_adapt.py</code>。</p><nav class="pager"><a href="04-data-mixture.html">← 第 4 章 · 数据配方：人类视频、UMI、遥操作各管什么</a><a href="06-rl-post-training.html">第 6 章 · RL 后训练：让会做的事做得更稳 →</a></nav>
+</main>
+<footer>来自个人学习仓库的对话讲义，含练习作答记录。源码：<a href="https://github.com/wikieden/reading-gr00t2">github.com/wikieden/reading-gr00t2</a></footer>
+</body></html>

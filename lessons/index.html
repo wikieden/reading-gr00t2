@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>读懂 GR00T 2 · 讲义目录 · 读懂 GR00T 2</title>
+<style>
+:root{--bg:#fbfbfa;--fg:#1f2328;--mute:#5d6470;--line:#e3e5e8;--card:#fff;--acc:#2f6fdf;--code:#f2f3f5;--quote:#f4f6fa}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181d;--fg:#e4e7ec;--mute:#9aa3b2;--line:#2c323b;--card:#1c2026;--acc:#7aa7ff;--code:#22272f;--quote:#1b2029}}
+:root[data-theme="dark"]{--bg:#15181d;--fg:#e4e7ec;--mute:#9aa3b2;--line:#2c323b;--card:#1c2026;--acc:#7aa7ff;--code:#22272f;--quote:#1b2029}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.75 -apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",sans-serif}
+a{color:var(--acc)}
+header.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+header.top .in{max-width:860px;margin:0 auto;padding:10px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:14px}
+header.top .brand{font-weight:600;color:var(--fg);text-decoration:none;margin-right:auto}
+header.top a{text-decoration:none}
+main{max-width:860px;margin:0 auto;padding:24px 16px 72px;overflow-wrap:anywhere}
+h1{font-size:28px;line-height:1.35;margin:8px 0 16px} h2{font-size:22px;margin:40px 0 12px;padding-top:8px;border-top:1px solid var(--line)} h3{font-size:18px;margin:28px 0 8px}
+img{max-width:100%;height:auto;border-radius:8px;border:1px solid var(--line);background:#fff}
+blockquote{margin:16px 0;padding:10px 16px;background:var(--quote);border-left:3px solid var(--acc);border-radius:4px;color:var(--mute)}
+blockquote p{margin:4px 0}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:var(--code);padding:12px 14px;border-radius:8px;overflow-x:auto} pre code{padding:0;background:none}
+table{border-collapse:collapse;display:block;overflow-x:auto;max-width:100%;margin:12px 0;font-size:15px}
+th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top} th{background:var(--code)}
+details{border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin:8px 0;background:var(--card)}
+details[open]{padding-bottom:10px} summary{cursor:pointer;color:var(--acc);font-weight:500}
+mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+.btn{display:inline-block;margin:4px 8px 4px 0;padding:6px 14px;border:1px solid var(--acc);border-radius:999px;text-decoration:none;font-size:14px}
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin:16px 0}
+.card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;color:inherit;text-decoration:none}
+.card:hover{border-color:var(--acc)} .card img{border:0;border-bottom:1px solid var(--line);border-radius:0;aspect-ratio:16/10;object-fit:contain;width:100%}
+.card .no{color:var(--mute);font-size:13px;padding:8px 12px 0} .card .t{padding:0 12px 12px;font-weight:500;line-height:1.5}
+.lead{font-size:17px;color:var(--mute)}
+footer{max-width:860px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font-size:13px}
+</style>
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"],["$$","$$"]],processEscapes:true,processEnvironments:true}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+</head><body>
+<header class="top"><div class="in">
+<a class="brand" href="../index.html">读懂 GR00T 2</a>
+<a href="../lessons/index.html">讲义目录</a>
+<a href="../animations/index.html">动画</a>
+<a href="../review.html">复习卡片</a>
+<a href="../lessons/appendix-glossary.html">缩写表</a>
+</div></header>
+<main>
+<h1 id="gr00t-2">读懂 GR00T 2 · 讲义目录</h1>
+<blockquote>
+<p>11 章 · 10 个动画（GIF + 可交互页面）· 24 张复习卡片 · 覆盖 GR00T 2 白皮书（2026-11）正文 §1–5 与附录 A–K 的主要内容</p>
+</blockquote>
+<h2 id="_1">这本书讲什么</h2>
+<p>从"WAM 和 VLA 差在哪"讲起，依次走过 GR00T 2 的架构、三阶段预训练、数据配方、跨本体迁移、RL 后训练、agent 协作、人形部署、真机评测方法、实时部署，最后是作者自己列的开放问题。</p>
+<ul>
+<li><strong>适合谁</strong>：读过 <code>vla-deep-dive</code> 第 3 章（action chunking）和第 8 章（π0）；flow matching、Bradley-Terry、PPO 在用到的那一章现场补。</li>
+<li><strong>读完能做什么</strong>：能独立读懂白皮书附录，评估 WAM 路线在自己项目里的取舍，能复算白皮书里的 token 数、胜率、样本量。</li>
+<li><strong>怎么读</strong>：按章顺序读。每章先看讲解，再自己做练习，最后用复习卡片隔几天考自己。</li>
+</ul>
+<h2 id="_2">讲解的特点</h2>
+<ul>
+<li><strong>每章一个动画</strong>：第 1–10 章各配一个，GIF 嵌在讲义"动画演示"一节，同名 <code>.html</code> 可单步、拖滑块，目录见 <a href="../animations/index.html">animations/README.md</a>。</li>
+<li><strong>一次一小步</strong>：每个概念按"白话类比 → 公式（每个符号说清楚怎么读）→ 小数字亲手算一遍"讲。</li>
+<li><strong>对照原文</strong>：讲到原文的地方标 <code>materials/text/gr00t2-whitepaper.txt</code> 的行号（如 L130–L131）；推算出来、原文没直接写的数都标了"推算"。</li>
+<li><strong>保留真实的学习过程</strong>：练习与作答记录里是学习时的原话、对错和点评。</li>
+<li><strong>术语不设门槛</strong>：缩写第一次出现就给英文全称并逐词解释，全书缩写见 <a href="../lessons/appendix-glossary.html">缩写与术语表</a>。</li>
+<li><strong>每章收尾有口诀</strong>：全部口诀汇总在本页末尾。</li>
+</ul>
+<h2 id="_3">示例动画</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img alt="" src="../animations/01-vla-vs-wam.gif" /><br><strong>第 1 章</strong> VLA 与 WAM 能算的 loss · <a href="../lessons/01-what-is-a-wam.html">讲义</a> · <a href="../animations/01-vla-vs-wam.html">▶ 交互</a></td>
+<td><img alt="" src="../animations/02-token-flow.gif" /><br><strong>第 2 章</strong> token 数与 joint / cached 去噪 · <a href="../lessons/02-architecture.html">讲义</a> · <a href="../animations/02-token-flow.html">▶ 交互</a></td>
+<td><img alt="" src="../animations/06-cps-grpo.gif" /><br><strong>第 6 章</strong> CPS 探索与带记忆基线 · <a href="../lessons/06-rl-post-training.html">讲义</a> · <a href="../animations/06-cps-grpo.html">▶ 交互</a></td>
+</tr>
+<tr>
+<td><img alt="" src="../animations/08-multirate.gif" /><br><strong>第 8 章</strong> 人形三层频率 · <a href="../lessons/08-humanoid.html">讲义</a> · <a href="../animations/08-multirate.html">▶ 交互</a></td>
+<td><img alt="" src="../animations/09-elo-arena.gif" /><br><strong>第 9 章</strong> 盲测 A/B 拟合 Elo · <a href="../lessons/09-evaluation.html">讲义</a> · <a href="../animations/09-elo-arena.html">▶ 交互</a></td>
+<td><img alt="" src="../animations/10-latency-rtc.gif" /><br><strong>第 10 章</strong> 延迟瀑布与 RTC 交接 · <a href="../lessons/10-deployment.html">讲义</a> · <a href="../animations/10-latency-rtc.html">▶ 交互</a></td>
+</tr>
+</tbody>
+</table>
+<p>全部动画见 <a href="../animations/index.html">animations/README.md</a>。</p>
+<h2 id="_4">其他入口</h2>
+<ul>
+<li><strong>架构总结</strong>：技术亮点、数值表、模型塔结构，一页看全</li>
+<li><a href="../review.html">复习卡片</a> · 专题研究总览 · 学习计划</li>
+</ul>
+<h2 id="_5">全流程总览</h2>
+<pre><code> 数据（第 4 章）                    模型（第 1、2 章）                  训练（第 3、6 章）
+ 人类视频 40 万 h ┐                 视频 VAE ────────┐                Stage 1 只学视频
+ UMI 1 万 h       ├─▶ 联合预训练 ─▶ 状态/动作 MLP ───┼─▶ 2B 单塔 DiT ─▶ Stage 2 视频+动作
+ 遥操作 2.35 万 h ┘                 文本 cross-attn ─┘  （画未来+出动作） Stage 3 机器人加权
+                                                                     → LoRA 少样本 / RL 后训练
+ 用起来（第 5、7、8、10 章）                            量起来（第 9 章）
+ X-Adapt 零遥操作学新任务 · agent 当 S2 · 人形 S1        盲测 A/B → Bradley-Terry Elo
+ · 实时部署（TensorRT / FP8 / RTC / 变速）               · 校准仿真代理评测
+                                      ↓
+                             开放问题（第 11 章）
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>步</th>
+<th>做什么</th>
+<th>为什么</th>
+<th>章</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>把 VLA 换成 WAM</td>
+<td>未来画面对没有机器人动作的数据也能算 loss</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>视频、状态、动作进同一个 DiT</td>
+<td>动作能看着想象的未来生成</td>
+<td>2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>先学看、再学动、再学本体</td>
+<td>先建视觉动力学先验</td>
+<td>3</td>
+</tr>
+<tr>
+<td>4</td>
+<td>三类数据分工</td>
+<td>见识 / 任务 / 身体</td>
+<td>4</td>
+</tr>
+<tr>
+<td>5</td>
+<td>演示定任务、玩耍定身体</td>
+<td>不遥操作也能学新任务</td>
+<td>5</td>
+</tr>
+<tr>
+<td>6</td>
+<td>CPS + 带记忆 GRPO + 自模仿</td>
+<td>接触任务从 40–76% 到 88–98%</td>
+<td>6</td>
+</tr>
+<tr>
+<td>7</td>
+<td>agent 管工序、画点指路</td>
+<td>长程可靠性</td>
+<td>7</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Turbo + SONIC 三层栈</td>
+<td>人形 50 Hz 平衡</td>
+<td>8</td>
+</tr>
+<tr>
+<td>9</td>
+<td>盲测 A/B + Elo + 校准仿真</td>
+<td>可累积、可置信的进步</td>
+<td>9</td>
+</tr>
+<tr>
+<td>10</td>
+<td>编译、量化、RTC、变速</td>
+<td>实时、平滑、比人快</td>
+<td>10</td>
+</tr>
+<tr>
+<td>11</td>
+<td>作者的开放问题</td>
+<td>下一步往哪走</td>
+<td>11</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_6">目录</h2>
+<table>
+<thead>
+<tr>
+<th>章</th>
+<th>主题</th>
+<th>一句话精要</th>
+<th>动画</th>
+<th>卡片</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><a href="../lessons/01-what-is-a-wam.html">什么是 WAM</a></td>
+<td>WAM 比 VLA 多预测未来画面，这一项让人类视频也能算 loss</td>
+<td><a href="../animations/01-vla-vs-wam.html">▶</a></td>
+<td>G01–G03</td>
+<td>🟡 三步已讲；练习 1 ✓，练习 2、3 待作答</td>
+</tr>
+<tr>
+<td>2</td>
+<td><a href="../lessons/02-architecture.html">架构</a></td>
+<td>280 token / 路 / 帧，视频和动作同序列一起去噪，Turbo 只换 VAE</td>
+<td><a href="../animations/02-token-flow.html">▶</a></td>
+<td>G04–G06</td>
+<td>🟡 正文已写，练习待作答</td>
+</tr>
+<tr>
+<td>3</td>
+<td><a href="../lessons/03-pretraining-recipe.html">三阶段预训练与少样本适配</a></td>
+<td>先看后动再认身；rank-32 LoRA 30 分钟</td>
+<td><a href="../animations/03-stages-lora.html">▶</a></td>
+<td>G07–G08</td>
+<td>🟡 正文已写，练习待作答</td>
+</tr>
+<tr>
+<td>4</td>
+<td><a href="../lessons/04-data-mixture.html">数据配方</a></td>
+<td>录像管见识、UMI 管任务、遥操作管身体；scaling 未饱和</td>
+<td><a href="../animations/04-data-scaling.html">▶</a></td>
+<td>G09–G10</td>
+<td>🟡 正文已写，练习待作答</td>
+</tr>
+<tr>
+<td>5</td>
+<td><a href="../lessons/05-x-adapt.html">X-Adapt</a></td>
+<td>演示定任务、玩耍定身体；几何要对齐、外观交给模型</td>
+<td><a href="../animations/05-x-adapt-ablation.html">▶</a></td>
+<td>G11–G12</td>
+<td>🟡 正文已写，练习待作答</td>
+</tr>
+<tr>
+<td>6</td>
+<td><a href="../lessons/06-rl-post-training.html">RL 后训练</a></td>
+<td>CPS 加噪、带记忆基线、自模仿最好、世界模型里也能练</td>
+<td><a href="../animations/06-cps-grpo.html">▶</a></td>
+<td>G13–G14</td>
+<td>🟡 正文已写，练习待作答</td>
+</tr>
+<tr>
+<td>7</td>
+<td><a href="../lessons/07-agentic.html">Agentic</a></td>
+<td>agent 管工序和恢复，图上画点指路；可靠性三层叠</td>
+<td><a href="../animations/07-agent-loop.html">▶</a></td>
+<td>G15–G16</td>
+<td>🟡 正文已写，练习待作答</td>
+</tr>
+<tr>
+<td>8</td>
+<td><a href="../lessons/08-humanoid.html">人形全身</a></td>
+<td>Turbo 1 Hz 出 80 个 token，SONIC 50 Hz 保平衡；WAM 更会吃仿真</td>
+<td><a href="../animations/08-multirate.html">▶</a></td>
+<td>G17–G18</td>
+<td>🟡 正文已写，练习待作答</td>
+</tr>
+<tr>
+<td>9</td>
+<td><a href="../lessons/09-evaluation.html">评测</a></td>
+<td>同场盲测、Bradley-Terry Elo、按任务 bootstrap、仿真相关 0.93</td>
+<td><a href="../animations/09-elo-arena.html">▶</a></td>
+<td>G19–G21</td>
+<td>🟡 正文已写，练习待作答</td>
+</tr>
+<tr>
+<td>10</td>
+<td><a href="../lessons/10-deployment.html">部署</a></td>
+<td>加速 2.9–7.2×、noisy-prefix RTC、按阶段变速快 15–26%</td>
+<td><a href="../animations/10-latency-rtc.html">▶</a></td>
+<td>G22–G23</td>
+<td>🟡 正文已写，练习待作答</td>
+</tr>
+<tr>
+<td>11</td>
+<td><a href="../lessons/11-open-problems.html">开放问题</a></td>
+<td>预测什么、数据汇率、99% 可靠性怎么测</td>
+<td>无</td>
+<td>G24</td>
+<td>🟡 正文已写，练习待作答</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_7">口诀汇总</h2>
+<p><strong>第 1 章 什么是 WAM</strong></p>
+<blockquote>
+<p>多画一帧未来图，人类录像全能读；<br />
+世界怎变大家学，身体怎动各一头；<br />
+人看越多机越强，算力大头在画图。</p>
+</blockquote>
+<p><strong>第 2 章 架构</strong></p>
+<blockquote>
+<p>缩印剪票二百八，粗笔一换剩七十；<br />
+视频动作同一列，语言旁听交叉看；<br />
+两步画面四步手，缓存键值省大头。</p>
+</blockquote>
+<p><strong>第 3 章 三阶段预训练</strong></p>
+<blockquote>
+<p>先看后动再认身，一阶只把画面跟；<br />
+有标才算动作损，机器加权落自身；<br />
+贴张低秩小便签，难段多练半小时。</p>
+</blockquote>
+<p><strong>第 4 章 数据配方</strong></p>
+<blockquote>
+<p>录像管见识，同款管任务，后厨管身体；<br />
+手点二十一，字幕分两级；<br />
+只改看多少，十四点还在涨。</p>
+</blockquote>
+<p><strong>第 5 章 X-Adapt</strong></p>
+<blockquote>
+<p>演示定做啥，玩耍定身体，预训练来牵线；<br />
+几何必须手对齐，外观交给模型补；<br />
+力当动作软关节，捏得稳也不怕偏。</p>
+</blockquote>
+<p><strong>第 6 章 RL 后训练</strong></p>
+<blockquote>
+<p>只给动作加点噪，方差不变好算概；<br />
+基线掺进老成绩，全对全错也有梯；<br />
+探出成功再模仿，残差小修不动底，梦里练完真机测。</p>
+</blockquote>
+<p><strong>第 7 章 Agentic</strong></p>
+<blockquote>
+<p>工长管工序，师傅管手艺；<br />
+抓点画圆放点叉，洋红左手青色右；<br />
+预训练给广度，纠错练精度，agent 兜底恢复。</p>
+</blockquote>
+<p><strong>第 8 章 人形全身</strong></p>
+<blockquote>
+<p>一秒一想一点六，八十令牌二十毫；<br />
+平衡交给 SONIC 管，PD 千赫跟到底；<br />
+舞步不变换舞台，WAM 吃仿更长进。</p>
+</blockquote>
+<p><strong>第 9 章 评测</strong></p>
+<blockquote>
+<p>同场同人几分钟，漂移相消才算公；<br />
+强度拟合换 Elo，四百为底十为幂；<br />
+抽样要抽任务头，仿真零点九三准，九九可靠测不够。</p>
+</blockquote>
+<p><strong>第 10 章 部署</strong></p>
+<blockquote>
+<p>复用编译图回放，八位少步再预取；<br />
+交棒前缀加点噪，接得上又不照抄；<br />
+直道加速弯道慢，机器快过示范人。</p>
+</blockquote>
+<p><strong>第 11 章 开放问题</strong></p>
+<blockquote>
+<p>不必全靠机器录，可靠要靠层层叠，测不准就别前进；<br />
+预测什么记多久，力觉触觉怎么接；<br />
+汇率未知难分钱，九九可靠测不够，稀缺换能是总题。</p>
+</blockquote>
+</main>
+<footer>来自个人学习仓库的对话讲义，含练习作答记录。源码：<a href="https://github.com/wikieden/reading-gr00t2">github.com/wikieden/reading-gr00t2</a></footer>
+</body></html>

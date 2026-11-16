@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>第 8 章 · 人形全身：Turbo 想动作，SONIC 保平衡 · 读懂 GR00T 2</title>
+<style>
+:root{--bg:#fbfbfa;--fg:#1f2328;--mute:#5d6470;--line:#e3e5e8;--card:#fff;--acc:#2f6fdf;--code:#f2f3f5;--quote:#f4f6fa}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181d;--fg:#e4e7ec;--mute:#9aa3b2;--line:#2c323b;--card:#1c2026;--acc:#7aa7ff;--code:#22272f;--quote:#1b2029}}
+:root[data-theme="dark"]{--bg:#15181d;--fg:#e4e7ec;--mute:#9aa3b2;--line:#2c323b;--card:#1c2026;--acc:#7aa7ff;--code:#22272f;--quote:#1b2029}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.75 -apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",sans-serif}
+a{color:var(--acc)}
+header.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+header.top .in{max-width:860px;margin:0 auto;padding:10px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:14px}
+header.top .brand{font-weight:600;color:var(--fg);text-decoration:none;margin-right:auto}
+header.top a{text-decoration:none}
+main{max-width:860px;margin:0 auto;padding:24px 16px 72px;overflow-wrap:anywhere}
+h1{font-size:28px;line-height:1.35;margin:8px 0 16px} h2{font-size:22px;margin:40px 0 12px;padding-top:8px;border-top:1px solid var(--line)} h3{font-size:18px;margin:28px 0 8px}
+img{max-width:100%;height:auto;border-radius:8px;border:1px solid var(--line);background:#fff}
+blockquote{margin:16px 0;padding:10px 16px;background:var(--quote);border-left:3px solid var(--acc);border-radius:4px;color:var(--mute)}
+blockquote p{margin:4px 0}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:var(--code);padding:12px 14px;border-radius:8px;overflow-x:auto} pre code{padding:0;background:none}
+table{border-collapse:collapse;display:block;overflow-x:auto;max-width:100%;margin:12px 0;font-size:15px}
+th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top} th{background:var(--code)}
+details{border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin:8px 0;background:var(--card)}
+details[open]{padding-bottom:10px} summary{cursor:pointer;color:var(--acc);font-weight:500}
+mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+.btn{display:inline-block;margin:4px 8px 4px 0;padding:6px 14px;border:1px solid var(--acc);border-radius:999px;text-decoration:none;font-size:14px}
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin:16px 0}
+.card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;color:inherit;text-decoration:none}
+.card:hover{border-color:var(--acc)} .card img{border:0;border-bottom:1px solid var(--line);border-radius:0;aspect-ratio:16/10;object-fit:contain;width:100%}
+.card .no{color:var(--mute);font-size:13px;padding:8px 12px 0} .card .t{padding:0 12px 12px;font-weight:500;line-height:1.5}
+.lead{font-size:17px;color:var(--mute)}
+footer{max-width:860px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font-size:13px}
+</style>
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"],["$$","$$"]],processEscapes:true,processEnvironments:true}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+</head><body>
+<header class="top"><div class="in">
+<a class="brand" href="../index.html">读懂 GR00T 2</a>
+<a href="../lessons/index.html">讲义目录</a>
+<a href="../animations/index.html">动画</a>
+<a href="../review.html">复习卡片</a>
+<a href="../lessons/appendix-glossary.html">缩写表</a>
+</div></header>
+<main>
+<h1 id="8-turbo-sonic">第 8 章 · 人形全身：Turbo 想动作，SONIC 保平衡</h1><p><a class="btn" href="../animations/08-multirate.html">▶ 打开本章可交互动画</a></p>
+<blockquote>
+<p>本章回答：人形机器人要 50 Hz 保持平衡，GR00T 2 Turbo 一秒才出一次动作块，怎么配合？全身遥操作数据又贵又少，怎么用仿真扩增？<br />
+讲解日期：2026-11-15 · 上一章：<a href="../lessons/07-agentic.html">第 7 章 Agentic</a> · 下一章：<a href="../lessons/09-evaluation.html">第 9 章 评测</a><br />
+对应原文：<code>materials/text/gr00t2-whitepaper.txt</code> §3.5 L834–L858、Fig. 9 L783–L827；附录 H.1 L6614–L6625、H.2 Tab. 25 L6737–L6747、H.3 Tab. 26 L6765–L6805<br />
+本章缩写：S0 / S1 / S2 = System 0 / 1 / 2（底层控制器 / 快策略 / 慢推理）；PD = Proportional-Derivative（比例 / 微分）控制；DP = Diffusion Policy（扩散 / 策略）；OOD = Out-of-Distribution（分布 / 之外）；CMA-ES = Covariance Matrix Adaptation Evolution Strategy（协方差矩阵 / 自适应 / 进化 / 策略）。全部缩写见 <a href="../lessons/appendix-glossary.html">附录 · 缩写与术语表</a></p>
+</blockquote>
+<h2 id="_1">讲解</h2>
+<h3 id="2026-11-15">第一步：三层栈，每层一个频率（2026-11-15）</h3>
+<p><strong>类比：骑自行车。</strong> 你决定"去超市"（S2，偶尔想一次）；你规划"接下来一两秒往左拐、捏刹车"（S1，约一秒一次）；身体自动保持平衡、蹬踏板（S0，每秒几十次，不用想）；肌肉纤维收缩（PD，更快）。</p>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>谁</th>
+<th>输入</th>
+<th>输出</th>
+<th>频率</th>
+<th>跑在哪</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S2（可选）</td>
+<td>推理模型 / 脚本任务计划 / 操作员</td>
+<td>任务</td>
+<td>选任务、在图上标物体或放置点，监控、失败重规划</td>
+<td>按需</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>S1</strong></td>
+<td><strong>GR00T 2 Turbo</strong></td>
+<td>头 + 双腕 RGB、关节位置（50 Hz 本体感知）、语言</td>
+<td>1.6 s 动作块 = 80 个 SONIC 全身运动 latent token + 夹爪宽度</td>
+<td>约 <strong>1 Hz</strong> 重规划</td>
+<td>Jetson AGX Thor（机载）</td>
+</tr>
+<tr>
+<td><strong>S0</strong></td>
+<td><strong>SONIC</strong> 全身控制器</td>
+<td>当前 latent token + 本体感知</td>
+<td>关节位置目标</td>
+<td><strong>50 Hz</strong></td>
+<td>Jetson Orin NX（机载）</td>
+</tr>
+<tr>
+<td>硬件</td>
+<td>关节 PD</td>
+<td>关节目标</td>
+<td>力矩</td>
+<td><strong>1000 Hz</strong></td>
+<td>电机驱动</td>
+</tr>
+</tbody>
+</table>
+<p>出处：Fig. 9（L783–L827）、附录 H.1（L6614–L6625）。</p>
+<p><strong>例子：80 是怎么来的。</strong> 动作块 1.6 s，S0 每 20 ms（50 Hz）取一个 token：<span class="arithmatex">\(1.6\ \text{s}\times50\ \text{Hz}=80\)</span> 个 token。每 1 s 重规划一次，所以相邻两块有 <span class="arithmatex">\(1.6-1.0=0.6\)</span> s 重叠，留出推理时间（Jetson Thor 上 124 ms）。</p>
+<p><strong>为什么用 latent token 当动作空间</strong>（H.1）：同一个 token 空间贯穿数据采集、仿真和部署——遥操作时操作员的动作先编码成 token 再由 SONIC 执行，所以演示<strong>直接录在策略的动作空间里</strong>；仿真里也跑同一个 SONIC。夹爪宽度不经 SONIC。</p>
+<p><strong>一句话</strong>：Turbo 一秒想一次"接下来 1.6 秒的全身动作"（80 个 token），SONIC 每 20 ms 把一个 token 变成关节目标并负责平衡。</p>
+<h3 id="2026-11-15_1">第二步：真机结果（2026-11-15）</h3>
+<p><strong>类比：同样的教材、同样的教练，换学生比成绩。</strong> 所有方法用同一批演示后训练、同一个 SONIC 当 S0，只换 S1。</p>
+<p><strong>例子：Tab. 25</strong>（成功率 %，无部分分）：</p>
+<table>
+<thead>
+<tr>
+<th>任务</th>
+<th>次数</th>
+<th>DP（latent token 上的扩散策略）</th>
+<th>π0.5</th>
+<th>GR00T 1.7</th>
+<th><strong>GR00T 2 Turbo</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>爆米花舀取与递送（一手拿杯、一手舀，每次要两满杯）</td>
+<td>48</td>
+<td>27.1</td>
+<td>0.0</td>
+<td>83.3</td>
+<td><strong>100.0</strong></td>
+</tr>
+<tr>
+<td>桌面清理（每次 6 件杂物，走到垃圾桶放进去）</td>
+<td>30</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>73.3</td>
+<td><strong>93.3</strong></td>
+</tr>
+<tr>
+<td>地面拾取（弯腰捡 30 种物体）</td>
+<td>30</td>
+<td>36.7</td>
+<td>30.0</td>
+<td>50.0</td>
+<td><strong>83.3</strong></td>
+</tr>
+<tr>
+<td>全身清洁（拿毛巾、捡杯子、<strong>用脚</strong>擦地、丢掉）</td>
+<td>30</td>
+<td>10.0</td>
+<td>0.0</td>
+<td>43.3</td>
+<td><strong>46.7</strong></td>
+</tr>
+<tr>
+<td>平均</td>
+<td></td>
+<td>18.5</td>
+<td>7.5</td>
+<td>62.5</td>
+<td><strong>80.8</strong></td>
+</tr>
+</tbody>
+</table>
+<p>爆米花还更快：两杯约 41 s，GR00T 1.7 约 48 s（L6750 附近）。桌面清理的失败多是餐巾、薯片袋这类扁平物体夹不起来。</p>
+<p><strong>一句话</strong>：同数据同控制器，换成 WAM 的 Turbo 当 S1，平均成功率 62.5% → 80.8%；最难的"用脚擦地"仍不到一半。</p>
+<h3 id="2026-11-15_2">第三步：动作不变、换场景——以运动为中心的仿真扩增（2026-11-15）</h3>
+<p><strong>类比：同一段舞蹈，换一百个舞台录。</strong> 遥操作录下来的全身动作是宝贵的，别浪费：保持动作不变，去仿真里找"让这段动作恰好能完成任务"的桌子和物体摆放，再在很多房间里渲染。</p>
+<p><strong>流程</strong>（附录 H.3，Fig. 59）：
+1. 取一条遥操作 episode 的全身动作（只要动作）；
+2. 在 MuJoCo / Isaac Lab 里用<strong>同一个 SONIC</strong> 回放，<strong>CMA-ES</strong> 搜索场景：先拟合桌子位置、高度、偏航角，再拟合物体类型、位置、朝向；每代并行评估 48 个候选；
+3. 物理校验：只保留"双指抓住、提起、并在 30 帧、等于物体重量的扰动力下拿稳"的拟合；
+4. 同一个通过的拟合，在大量生成的房间里渲染成合成演示。</p>
+<p><strong>例子：Tab. 26</strong>（G1 桌面抓放，30 次，同一份真实数据里混入仿真演示）：</p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>分布内：真</th>
+<th>真 + 仿</th>
+<th>分布外：真</th>
+<th>真 + 仿</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>π0.5（VLA）</td>
+<td>40.0</td>
+<td>16.7</td>
+<td>0.0</td>
+<td>13.3</td>
+</tr>
+<tr>
+<td>GR00T 1.7（VLA）</td>
+<td>46.7</td>
+<td>66.7</td>
+<td>6.7</td>
+<td>40.0</td>
+</tr>
+<tr>
+<td>GR00T 2 Turbo（WAM）</td>
+<td>73.3</td>
+<td>83.3</td>
+<td>6.7</td>
+<td><strong>63.3</strong></td>
+</tr>
+</tbody>
+</table>
+<p>分布外起点都是 6.7%（30 次里 2 次），加仿真后 WAM 涨到 63.3%（19 次），VLA 到 40.0%（12 次）。π0.5 在分布内加仿真反而掉了。作者的结论标题就是 <em>"WAMs Consume Simulation Data Better than VLAs"</em>（L6765）——一个合理的解释是：仿真画面和真实画面有差距，WAM 本来就在学"画面怎么变"，更能把仿真里的视觉多样性当成有用的监督；这一点白皮书没有做因果消融。</p>
+<p><strong>一句话</strong>：保持真实动作和控制器不变、只在仿真里换场景，WAM 把分布外成功率从 6.7% 拉到 63.3%，比 VLA 吃得更好。</p>
+<h3 id="turbo-sonic-20-ms">动画演示：Turbo 一秒想一次，SONIC 每 20 ms 走一格</h3>
+<p><img alt="Turbo 一秒想一次，SONIC 每 20 ms 走一格" src="../animations/08-multirate.gif" /></p>
+<p>可交互版：<a href="../animations/08-multirate.html">animations/08-multirate.html</a>（▶ 播放、→ 单步、↺ 从头开始；S1 推理延迟滑块（40–500 ms））</p>
+<p><strong>怎么看</strong>：
+1. 每个彩色长条是一个 1.6 s / 80 token 的动作块，浅色前段是推理时间（第一步）。
+2. 竖线是新块到达、S0 切换的时刻；黑色游标是 S0 当前执行的那一格（每格 20 ms），底部细刻度是 1 kHz 的 PD。
+3. 拖延迟滑块，看"新块到达时旧块还剩"怎么变。</p>
+<h2 id="_2">练习与作答记录</h2>
+<p><strong>题 1</strong>（第一步 频率）：如果 Turbo 推理慢到 800 ms，1 Hz 重规划、1.6 s 动作块的设计还够吗？重叠区剩多少？</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<p><strong>题 2</strong>（第二步 结果）：全身清洁 30 次 GR00T 2 Turbo 46.7%，GR00T 1.7 43.3%。这两个数分别是成功了几次？差距可信吗？（提示：第 4 章的 SEM。）</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<p><strong>题 3</strong>（第三步 仿真扩增）：为什么物理校验要加"等于物体重量的扰动力"，而不是只看"提起来了"？</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<h2 id="_3">口诀</h2>
+<blockquote>
+<p>一秒一想一点六，八十令牌二十毫；<br />
+平衡交给 SONIC 管，PD 千赫跟到底；<br />
+舞步不变换舞台，WAM 吃仿更长进。</p>
+</blockquote>
+<h2 id="_4">本章复习卡片</h2>
+<p>G17、G18（练习做完后，按答错、卡住的地方再补。）</p>
+<h2 id="_5">附录 · 延伸阅读</h2>
+<h3 id="_6">推荐阅读</h3>
+<table>
+<thead>
+<tr>
+<th>读什么</th>
+<th>读哪里</th>
+<th>读它为了什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>★ GR00T 2 白皮书</td>
+<td>§3.5 L834–L858、Fig. 9</td>
+<td>本章原文</td>
+</tr>
+<tr>
+<td>★ GR00T 2 白皮书</td>
+<td>附录 H.1–H.3 L6614–L6836</td>
+<td>latent 动作接口、真机任务、仿真扩增</td>
+</tr>
+<tr>
+<td>SONIC（Luo et al., 2026）</td>
+<td>全文（待下载）</td>
+<td>全身运动 latent 和控制器</td>
+</tr>
+<tr>
+<td><code>cs285-deep-rl</code> 运控专题</td>
+<td><code>notes/topic-motion-control-ppo-grpo-supermimic.md</code></td>
+<td>全身控制器怎么用 RL 训</td>
+</tr>
+<tr>
+<td><code>robot-system-architecture</code> 讲义</td>
+<td>底层控制、ROS 2 章</td>
+<td>PD 环、控制频率分层</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_7">数学原理</h3>
+<ul>
+<li><strong>多速率控制</strong>：慢层输出被快层按时间插值/逐格消费；慢层周期 &lt; 动作块时长，才能无缝衔接。</li>
+<li><strong>CMA-ES</strong>：无梯度的进化优化，按协方差矩阵自适应地采样候选，适合"回放成功 / 失败"这种不可微目标。</li>
+</ul>
+<h3 id="_8">公式清单</h3>
+<table>
+<thead>
+<tr>
+<th>公式</th>
+<th>意思</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>token 数 = 块时长 × S0 频率 = 1.6 × 50 = 80</td>
+<td>动作块长度</td>
+</tr>
+<tr>
+<td>重叠 = 块时长 − 重规划周期</td>
+<td>留给推理的余量</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_9">代码对照</h3>
+<p>本章暂无代码对照：可补一个多速率时间轴模拟脚本 <code>ch08_humanoid.py</code>（S1 / S0 / PD 三层频率与重叠核对）。</p><nav class="pager"><a href="07-agentic.html">← 第 7 章 · Agentic GR00T 2：大模型当&quot;慢脑&quot;，GR00T 2 当&quot;快手&quot;</a><a href="09-evaluation.html">第 9 章 · 评测：盲测 A/B、Bradley-Terry Elo 和会说真话的仿真 →</a></nav>
+</main>
+<footer>来自个人学习仓库的对话讲义，含练习作答记录。源码：<a href="https://github.com/wikieden/reading-gr00t2">github.com/wikieden/reading-gr00t2</a></footer>
+</body></html>

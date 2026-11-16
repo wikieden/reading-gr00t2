@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UMI 到 YAM 的消融</title><link rel="stylesheet" href="anim.css"></head>
+<body><main>
+<h1>第 5 章 · 演示定任务、玩耍定身体：哪一步不能省</h1>
+<p class="sub">配套讲义：<a href="../lessons/05-x-adapt.html">第 5 章 · X-Adapt：不遥操作，也能教机器人新任务</a>。数据：白皮书 Tab. 17（UMI → YAM，零遥操作）。每行只改默认配置里的一项；成功率 %，传送带是 50 件里分对的比例。</p>
+<div class="panel"><svg id="sv" viewBox="0 0 680 470"></svg></div>
+<div class="row"><button id="play">▶ 播放</button><button id="step">→ 单步</button><button id="reset">↺ 从头开始</button></div>
+<p class="note">看点：最上面是配方——UMI 演示只提供"任务"，YAM 无任务玩耍数据只提供"身体"，跨本体预训练把它们接起来。下面每次亮一行消融：腕视图几何不对齐（随机变形 / 不处理）时，两个长程任务直接归零；去掉 UMI 预训练、减少 UMI 数据也会大幅掉；只有"单独动作头"在 NIST 板上略好，讲义练习 2 问的就是这个。</p>
+</main>
+<script src="anim.js"></script>
+<script>
+const sv=$('sv');
+function box(x,y,w,h,t,c){el('rect',{x,y,width:w,height:h,rx:6,fill:'var(--bg)',stroke:c},sv);txt(t,{x:x+8,y:y+h/2+5},sv)}
+box(10,10,190,34,'UMI 演示 → 定"做什么"','var(--accent)');box(10,54,190,34,'YAM 玩耍数据 → 定"身体"','var(--warm)');
+box(240,30,200,40,'跨本体预训练（含 UMI-10K）','var(--teal)');box(480,30,190,40,'YAM 上执行新任务','var(--good)');
+[[200,27,240,45],[200,71,240,55],[440,50,480,50]].forEach(a=>el('line',{x1:a[0],y1:a[1],x2:a[2],y2:a[3],stroke:'var(--muted)'},sv));
+const rows=[['默认配置',[60,50,86]],['腕视图：随机变形',[0,0,60]],['腕视图：不处理',[0,0,46]],['UMI 数据减半',[30,0,84]],['UMI 数据 1/4',[10,0,70]],['不含 UMI 预训练',[20,0,34]],['UMI 用单独动作头',[10,60,64]]];
+const tasks=['玩具翻斗车','NIST 板拆解','传送带分拣'],cols=['var(--accent)','var(--warm)','var(--teal)'];
+const X0=170,GW=140,Y0=130;
+tasks.forEach((t,j)=>{el('rect',{x:X0+j*(GW+20),y:Y0-24,width:12,height:12,fill:cols[j]},sv);txt(t,{x:X0+j*(GW+20)+16,y:Y0-14,class:'m'},sv)});
+const R=rows.map((r,i)=>{const y=Y0+i*46;txt(r[0],{x:10,y:y+22,class:'m'},sv);
+  return r[1].map((v,j)=>{const x=X0+j*(GW+20);el('rect',{x,y:y+8,width:GW,height:20,fill:'var(--bg)',stroke:'var(--line)'},sv);
+    return{b:el('rect',{x,y:y+8,height:20,fill:cols[j],width:0},sv),t:txt('',{x:x+4,y:y+23,class:'m'},sv),v,x}})});
+let k;
+function reset(){k=0;R.forEach(r=>r.forEach(c=>{c.b.setAttribute('width',0);c.t.textContent=''}))}
+function next(){if(k>=R.length)return false;R[k].forEach(c=>{c.b.setAttribute('width',Math.max(1,c.v/100*GW));c.t.setAttribute('x',c.x+Math.max(1,c.v/100*GW)+4);c.t.textContent=c.v+'%';
+  if(k>0&&c.v===0)c.t.setAttribute('style','fill:var(--bad)')});k++;return true}
+setupPlayer({captureSeed:1,reset,next},900);
+</script></body></html>

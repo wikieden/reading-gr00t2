@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>第 7 章 · Agentic GR00T 2：大模型当&quot;慢脑&quot;，GR00T 2 当&quot;快手&quot; · 读懂 GR00T 2</title>
+<style>
+:root{--bg:#fbfbfa;--fg:#1f2328;--mute:#5d6470;--line:#e3e5e8;--card:#fff;--acc:#2f6fdf;--code:#f2f3f5;--quote:#f4f6fa}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181d;--fg:#e4e7ec;--mute:#9aa3b2;--line:#2c323b;--card:#1c2026;--acc:#7aa7ff;--code:#22272f;--quote:#1b2029}}
+:root[data-theme="dark"]{--bg:#15181d;--fg:#e4e7ec;--mute:#9aa3b2;--line:#2c323b;--card:#1c2026;--acc:#7aa7ff;--code:#22272f;--quote:#1b2029}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.75 -apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",sans-serif}
+a{color:var(--acc)}
+header.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+header.top .in{max-width:860px;margin:0 auto;padding:10px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:14px}
+header.top .brand{font-weight:600;color:var(--fg);text-decoration:none;margin-right:auto}
+header.top a{text-decoration:none}
+main{max-width:860px;margin:0 auto;padding:24px 16px 72px;overflow-wrap:anywhere}
+h1{font-size:28px;line-height:1.35;margin:8px 0 16px} h2{font-size:22px;margin:40px 0 12px;padding-top:8px;border-top:1px solid var(--line)} h3{font-size:18px;margin:28px 0 8px}
+img{max-width:100%;height:auto;border-radius:8px;border:1px solid var(--line);background:#fff}
+blockquote{margin:16px 0;padding:10px 16px;background:var(--quote);border-left:3px solid var(--acc);border-radius:4px;color:var(--mute)}
+blockquote p{margin:4px 0}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:var(--code);padding:12px 14px;border-radius:8px;overflow-x:auto} pre code{padding:0;background:none}
+table{border-collapse:collapse;display:block;overflow-x:auto;max-width:100%;margin:12px 0;font-size:15px}
+th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top} th{background:var(--code)}
+details{border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin:8px 0;background:var(--card)}
+details[open]{padding-bottom:10px} summary{cursor:pointer;color:var(--acc);font-weight:500}
+mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+.btn{display:inline-block;margin:4px 8px 4px 0;padding:6px 14px;border:1px solid var(--acc);border-radius:999px;text-decoration:none;font-size:14px}
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin:16px 0}
+.card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;color:inherit;text-decoration:none}
+.card:hover{border-color:var(--acc)} .card img{border:0;border-bottom:1px solid var(--line);border-radius:0;aspect-ratio:16/10;object-fit:contain;width:100%}
+.card .no{color:var(--mute);font-size:13px;padding:8px 12px 0} .card .t{padding:0 12px 12px;font-weight:500;line-height:1.5}
+.lead{font-size:17px;color:var(--mute)}
+footer{max-width:860px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font-size:13px}
+</style>
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"],["$$","$$"]],processEscapes:true,processEnvironments:true}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+</head><body>
+<header class="top"><div class="in">
+<a class="brand" href="../index.html">读懂 GR00T 2</a>
+<a href="../lessons/index.html">讲义目录</a>
+<a href="../animations/index.html">动画</a>
+<a href="../review.html">复习卡片</a>
+<a href="../lessons/appendix-glossary.html">缩写表</a>
+</div></header>
+<main>
+<h1 id="7-agentic-gr00t-2gr00t-2">第 7 章 · Agentic GR00T 2：大模型当"慢脑"，GR00T 2 当"快手"</h1><p><a class="btn" href="../animations/07-agent-loop.html">▶ 打开本章可交互动画</a></p>
+<blockquote>
+<p>本章回答：长程任务会出错、会卡住、需要记忆，GR00T 2 自己扛不住时，怎么和一个前沿多模态 agent 分工？两者之间该传什么——语言，还是画在图上的点？<br />
+讲解日期：2026-11-15 · 上一章：<a href="../lessons/06-rl-post-training.html">第 6 章 RL 后训练</a> · 下一章：<a href="../lessons/08-humanoid.html">第 8 章 人形全身</a><br />
+对应原文：<code>materials/text/gr00t2-whitepaper.txt</code> §3.4 L624–L832；附录 G.1 L6032–L6253（Tab. 19 L6071）、G.2 L6254–L6555（Tab. 24 L6510）、G.3 L6556–L6588<br />
+本章缩写：S1 / S2 = System 1 / System 2（快系统 / 慢系统，借自卡尼曼的"快思考、慢思考"）；CaP = Code-as-Policy（代码 / 即 / 策略）；MCP = Model Context Protocol（模型 / 上下文 / 协议）；WAM API = WAM Application Programming Interface（WAM 的 / 应用 / 编程 / 接口）；DAgger = Dataset Aggregation（数据集 / 聚合）；SFT = Supervised Fine-Tuning（监督 / 微调）。全部缩写见 <a href="../lessons/appendix-glossary.html">附录 · 缩写与术语表</a></p>
+</blockquote>
+<h2 id="_1">讲解</h2>
+<h3 id="2026-11-15">第一步：谁管"做什么"、谁管"怎么做"（2026-11-15）</h3>
+<p><strong>类比：工地上的工长和老师傅。</strong> 工长（agent，S2）看图纸、排工序、检查质量、出了问题叫人返工，但自己拧不好螺丝；老师傅（GR00T 2，S1）手上功夫好，但不看整张图纸、也记不住半小时前干了什么（只有 0.8 s 历史）。</p>
+<p>白皮书的分工（L625–L628）：agent 决定 <em>what to do</em>——拆解长任务、监控进度、写代码；GR00T 2 决定 <em>how to do it</em>——做难以写成脚本的接触式操作。</p>
+<p><strong>运行时架构</strong>（Fig. 6，附录 G.1 L6045–L6066）：</p>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>组件</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent（S2）</td>
+<td>前沿多模态编码 agent + <code>AGENTS.md</code>（操作指南）+ <code>SKILL.md</code>（技能文档）+ <code>task.md</code>（阶段、成功标准、已知失败模式）</td>
+<td>observe → reason → act → verify 循环</td>
+</tr>
+<tr>
+<td>MCP Server</td>
+<td><code>wam_act</code>（带 prompt 执行 GR00T 2）、<code>stop_wam</code>；观测工具 <code>get_image</code>、<code>get_robot_state</code>、<code>localize_object</code>；CaP 原语 <code>move_to_pose</code>、<code>move_to_joints</code>、<code>set_gripper</code>；CaP 技能 <code>drop_any_object</code>、<code>flip_tractor</code>…</td>
+<td>把一切暴露成工具</td>
+</tr>
+<tr>
+<td>执行后端</td>
+<td>WAM Server（GR00T 2）；CaP 提供方 SAM3（分割定位）、cuRobo（运动规划）</td>
+<td>单一控制 worker 协调，避免 GR00T 2 和 CaP 同时发冲突指令</td>
+</tr>
+<tr>
+<td>环境</td>
+<td>真机或仿真，关节 PD 控制</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>agent 帮 GR00T 2 的四种方式</strong>（L628–L636）：</p>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>做什么</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Augment（增强）</td>
+<td>需要记忆/推理的任务，agent 跑任务级程序，每个操作步调 GR00T 2</td>
+<td>仿真榜 RoboCasa365、RoboDojo 第一</td>
+</tr>
+<tr>
+<td>Assist（协助）</td>
+<td>真机上 agent 盯着，零件掉了或卡住就用 CaP 修，再把控制权还给 GR00T 2</td>
+<td>杂乱起始组装 97–98 / 100</td>
+</tr>
+<tr>
+<td>Guide（引导）</td>
+<td>用视觉目标通过 WAM API 引导（第二步）</td>
+<td>长程 1.7% → 53.3%</td>
+</tr>
+<tr>
+<td>Improve（改进）</td>
+<td>研究 agent 发现 RL 配方（第 6 章 AutoRL）</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>例子：真机杂乱起始的长程组装</strong>（Fig. 7a，每法 100 次，零件随手倒在桌上，需要人帮的算失败）：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>玩具飞机</th>
+<th>玩具拖拉机</th>
+<th>Hot Wheels</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SFT</td>
+<td>69</td>
+<td>51</td>
+<td>23</td>
+</tr>
+<tr>
+<td>SFT + DAgger</td>
+<td>84</td>
+<td>71</td>
+<td>78</td>
+</tr>
+<tr>
+<td>SFT + DAgger + Agent</td>
+<td><strong>98</strong></td>
+<td><strong>97</strong></td>
+<td><strong>97</strong></td>
+</tr>
+</tbody>
+</table>
+<p>DAgger = 让策略跑、人在它出错处给纠正标注、把这些数据加回训练。三者叠加：预训练给广度，纠错数据补分布外状态，agent 补恢复。</p>
+<p><strong>例子：仿真榜</strong>（Tab. 19，RoboCasa365 平均成功率）：SFT 67.2 → +RL 72.4 → +Agent 81.8 → +RL+Agent <strong>88.0</strong>（此前榜首 HexaShell 1.5 为 85.6）。</p>
+<p><strong>一句话</strong>：agent 管工序、检查和恢复，GR00T 2 管手上功夫；GR00T 2 仍是默认执行者，agent 只在需要时插手。</p>
+<h3 id="wam-api2026-11-15">第二步：WAM API——在图上画点来"指路"（2026-11-15）</h3>
+<p><strong>类比：给师傅指活，用手一指比说一长串话管用。</strong> "把左边第二个绿色瓶子放进右边那个桶"——说起来绕，指一下就清楚。</p>
+<p><strong>接口设计</strong>（附录 G.2 L6260–L6280）：把 <em>what and where</em> 和 <em>how</em> 分开——
+- agent 每一步给：哪只手（acting arm）+ 一个抓取点 + 一个释放点（某一路场景相机图像上的像素坐标）；
+- GR00T 2 自己决定抓取姿态、接近方式和中间的全部运动；
+- 点<strong>直接画在条件帧上</strong>而不是走单独输入：实心圆 = 抓取点，加号 = 释放点；颜色表示手（洋红 = 左手，青色 = 右手），只标正在动的那只手，只标当前帧。原因：<em>GR00T 2 conditions strongly on fine visual details in its conditioning frames</em>（L6263）。
+- 训练：mid-train 让 GR00T 2 认这些标记；点的监督从已有演示的夹爪/手部状态<strong>自动生成</strong>，不需要额外人工标注或新演示（L719–L721）。</p>
+<p><strong>例子：效果</strong>（Fig. 8，等权平均的基准成功率）：</p>
+<table>
+<thead>
+<tr>
+<th>设定</th>
+<th>短程（2 个基准）</th>
+<th>长程（3 个）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GR00T 2 + 原始任务指令</td>
+<td>35.7</td>
+<td>0.0</td>
+</tr>
+<tr>
+<td>GR00T 2 + agent 语言指导</td>
+<td>44.2</td>
+<td>1.7</td>
+</tr>
+<tr>
+<td>GR00T 2 + agent 语言 + 视觉标记</td>
+<td><strong>76.8</strong></td>
+<td><strong>53.3</strong></td>
+</tr>
+</tbody>
+</table>
+<p>长程里最典型的：YAM 垃圾分类，没标记 0 / 20，有标记 17 / 20。</p>
+<p><strong>代价</strong>（Tab. 24，YAM 垃圾分类，中位数）：agent 每轮 7.5 s，而策略一次调用约 0.6 s；机器人有 38% 的时间停着等 agent；agent 费用每 episode 约 0.26 美元。</p>
+<p><strong>局限</strong>（L776–L832）：点只说"在哪"，不说"怎么"——侧放、倒、舀这类要求仍靠语言和 GR00T 2 自己的技能；更丰富的接口（6D 物体位姿、目标图像、可供性标记）是未来方向。</p>
+<p><strong>一句话</strong>：把"抓哪、放哪、哪只手"画成彩色标记直接贴在相机帧上，比纯语言指导强得多；代价是 agent 慢，机器人常在等。</p>
+<h3 id="2026-11-15_1">第三步：可靠性的账——三种机制叠加（2026-11-15）</h3>
+<p><strong>类比：安全的高空作业 = 熟练工人 + 安全绳 + 现场监理。</strong> 单靠哪一样都不够。</p>
+<p>白皮书 §5 的第二条观察：<em>"Reliability comes from complementary mechanisms, not from pretraining alone."</em>（L1626）</p>
+<table>
+<thead>
+<tr>
+<th>机制</th>
+<th>补的是什么</th>
+<th>本章 / 他章证据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>预训练</td>
+<td>广度：没见过的任务也会个大概</td>
+<td>第 3 章零样本 40%</td>
+</tr>
+<tr>
+<td>纠错演示（DAgger）+ RL</td>
+<td>精度和接触</td>
+<td>第 6 章 40–76% → 88–98%；本章 SFT → DAgger</td>
+</tr>
+<tr>
+<td>Agent</td>
+<td>记忆、校验、恢复</td>
+<td>本章 → 97–98%</td>
+</tr>
+</tbody>
+</table>
+<p><strong>例子：重复插入</strong>（Fig. 7b，连续插 5 根网线 / 5 个充电器，20 次）：同一个 agent 框架下，把 SFT 策略换成 RL 后的策略——多网线 12/20 → 19/20，多充电器 2/20 → 20/20。agent 本身救不了"手上功夫不够"，RL 也救不了"顺序和恢复"。</p>
+<p><strong>还没解决的</strong>（§5 L1688、附录 G.3）：长程组装的 8 次失败里有 3 次是"螺丝没拧到底，GR00T 2 和 agent 都判断为完成"——<strong>验证细微物理状态</strong>仍是瓶颈；未来设想把部署中 agent 的纠正蒸馏回策略，形成自我改进闭环（G.3 L6556–L6588）。</p>
+<p><strong>一句话</strong>：97% 是预训练 + 纠错/RL + agent 三层叠出来的；下一道坎是"判断有没有真做完"。</p>
+<h3 id="_2">动画演示：慢脑盯着、快手干活：一次掉件恢复</h3>
+<p><img alt="慢脑盯着、快手干活：一次掉件恢复" src="../animations/07-agent-loop.gif" /></p>
+<p>可交互版：<a href="../animations/07-agent-loop.html">animations/07-agent-loop.html</a>（▶ 播放、→ 单步、↺ 从头开始；无参数，可单步（时间线是示意））</p>
+<p><strong>怎么看</strong>：
+1. 三条泳道：agent、GR00T 2、CaP 技能；GR00T 2 是默认执行者（第一步）。
+2. 发现掉件 → agent 思考（斜纹是机器人在等）→ stop_wam → CaP 捡回 → verify → 交还 GR00T 2。
+3. 最后一帧是 WAM API 的画法：洋红实心圆 = 左手抓取点，加号 = 释放点（第二步）。</p>
+<h2 id="_3">练习与作答记录</h2>
+<p><strong>题 1</strong>（第一步 分工）：GR00T 2 只有 0.8 s 历史。举一个"必须交给 agent"的长程任务例子，说明是缺了哪种能力（记忆 / 校验 / 恢复）。</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<p><strong>题 2</strong>（第二步 接口）：为什么把点"画在图上"而不是作为两个坐标数字单独输入？结合 GR00T 2 是从视频生成模型初始化的这一点回答。</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<p><strong>题 3</strong>（第二步 代价）：YAM 垃圾分类带视觉标记的设定中，episode 中位时长 186 s、等 agent 占 38%。机器人大约有多少秒在等？如果 agent 每轮快一倍，粗略估一下 episode 能缩短多少？</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<h2 id="_4">口诀</h2>
+<blockquote>
+<p>工长管工序，师傅管手艺；<br />
+抓点画圆放点叉，洋红左手青色右；<br />
+预训练给广度，纠错练精度，agent 兜底恢复。</p>
+</blockquote>
+<h2 id="_5">本章复习卡片</h2>
+<p>G15、G16（练习做完后，按答错、卡住的地方再补。）</p>
+<h2 id="_6">附录 · 延伸阅读</h2>
+<h3 id="_7">推荐阅读</h3>
+<table>
+<thead>
+<tr>
+<th>读什么</th>
+<th>读哪里</th>
+<th>读它为了什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>★ GR00T 2 白皮书</td>
+<td>§3.4 L624–L832</td>
+<td>本章原文</td>
+</tr>
+<tr>
+<td>★ GR00T 2 白皮书</td>
+<td>附录 G.1 L6032 起、Tab. 19–20</td>
+<td>运行时、ASPIRE、榜单、何时 agent 介入</td>
+</tr>
+<tr>
+<td>GR00T 2 白皮书</td>
+<td>附录 G.2 L6254 起、Tab. 21–24</td>
+<td>视觉 steering 的接口、协议、指令分类、成本</td>
+</tr>
+<tr>
+<td><code>motubrain-2.0-live/notes/12-three-stage-system-overview.md</code></td>
+<td>全文</td>
+<td>另一家的三层系统，对比 S1 接口</td>
+</tr>
+<tr>
+<td><code>robot-system-architecture</code> 讲义</td>
+<td>第 1 章分层闭环</td>
+<td>为什么慢层和快层要分开</td>
+</tr>
+<tr>
+<td>ASPIRE（Lu et al., 2026）、Code as Policies（Liang et al., 2023）</td>
+<td>全文（待下载）</td>
+<td>程序合成式控制</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_8">数学原理</h3>
+<ul>
+<li><strong>DAgger</strong>：在学习者自己的状态分布上收集专家标签，避免"只在专家轨迹附近学过"导致的误差累积（复合误差随时域二次增长 → 线性）。</li>
+<li><strong>等权平均 vs 合并试验平均</strong>：Fig. 8 按基准等权，避免试验多的基准主导。</li>
+</ul>
+<h3 id="_9">公式清单</h3>
+<table>
+<thead>
+<tr>
+<th>公式</th>
+<th>意思</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>等待时间 ≈ episode 时长 × 等待占比</td>
+<td>agent 延迟的直接代价</td>
+</tr>
+<tr>
+<td>可靠性 ≈ 预训练 × 纠错/RL × agent 恢复</td>
+<td>定性关系，非公式（作者 §5 的观察）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_10">代码对照</h3>
+<p>本章无代码对照：内容是系统集成，代码发布后可补一个 MCP 工具定义的最小示例。</p><nav class="pager"><a href="06-rl-post-training.html">← 第 6 章 · RL 后训练：让会做的事做得更稳</a><a href="08-humanoid.html">第 8 章 · 人形全身：Turbo 想动作，SONIC 保平衡 →</a></nav>
+</main>
+<footer>来自个人学习仓库的对话讲义，含练习作答记录。源码：<a href="https://github.com/wikieden/reading-gr00t2">github.com/wikieden/reading-gr00t2</a></footer>
+</body></html>

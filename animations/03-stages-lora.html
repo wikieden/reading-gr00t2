@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>三阶段预训练与 LoRA 窗口采样</title><link rel="stylesheet" href="anim.css"></head>
+<body><main>
+<h1>第 3 章 · 三个阶段各算哪些 loss，LoRA 为什么多练难段</h1>
+<p class="sub">配套讲义：<a href="../lessons/03-pretraining-recipe.html">第 3 章 · 三阶段预训练与少样本适配：先学看，再学动，最后学&quot;我的身体&quot;</a>。上半张表按 §4.1 的描述画（"权重↑"只表示方向，白皮书没给具体配比）；下半张是讲义第三步的 4 个窗口（真实是每条 episode 100 个）。</p>
+<div class="panel"><svg id="sv" viewBox="0 0 680 430"></svg></div>
+<div class="stats">
+<div class="stat"><div class="l">当前</div><div class="v" id="sp">—</div></div>
+<div class="stat"><div class="l">已抽窗口</div><div class="v" id="sd">0</div></div>
+<div class="stat"><div class="l">抓取 + 插入 被抽中占比</div><div class="v" id="sh">—</div></div>
+</div>
+<div class="row ctl"><label>"抓取"窗口的冻结模型 loss <b id="lv">0.4</b></label><input id="l" type="range" min="0.1" max="0.8" step="0.1" value="0.4"></div>
+<div class="row"><button id="play">▶ 播放</button><button id="step">→ 单步</button><button id="reset">↺ 从头开始</button></div>
+<p class="note">看点：Stage 1 每类样本都只亮"视频"格；Stage 2 起有效动作标签才亮"动作"格（手部跟踪失败的人类视频只有视频格）；Stage 3 和 Stage 2 算的项一样，只是机器人样本被加权。下半部分按 loss 成比例抽窗口：loss 是伸手 4 倍的窗口，被抽中次数也约是 4 倍。</p>
+</main>
+<script src="anim.js"></script>
+<script>
+const sv=$('sv');
+const types=['YAM 遥操作','灵巧手遥操作','人类视频（有手部姿态）','人类视频（手部跟踪失败）'];
+const act=[[0,0,0,0],[1,1,1,0],[1,1,1,0]];const robot=[1,1,0,0];
+const stages=['Stage 1 单视角只学视频','Stage 2 视频 + 动作','Stage 3 机器人加权'];
+const X0=210,CW=150;
+types.forEach((t,i)=>txt(t,{x:10,y:66+i*30,class:'m'},sv));
+const cells=[];stages.forEach((s,j)=>{const x=X0+j*CW;const h=txt(s,{x,y:34,class:'m'},sv);
+  const col=[];types.forEach((t,i)=>{const y=52+i*30;
+    const v=el('rect',{x,y,width:56,height:20,rx:3,fill:'var(--bg)',stroke:'var(--line)'},sv);
+    const a=el('rect',{x:x+62,y,width:56,height:20,rx:3,fill:'var(--bg)',stroke:'var(--line)'},sv);
+    const vt=txt('',{x:x+8,y:y+15,class:'m'},sv),at=txt('',{x:x+70,y:y+15,class:'m'},sv);
+    const w=txt('',{x:x+122,y:y+15,class:'m'},sv);col.push({v,a,vt,at,w})});cells.push({h,col})});
+const LY=200;txt('LoRA 窗口采样：按冻结模型在每个窗口上的 loss 成比例抽',{x:10,y:LY-4,class:'m'},sv);
+const wins=['伸手','抓取','搬运','插入'];const base=[0.1,0.4,0.1,0.4];
+const WB=[];wins.forEach((n,i)=>{const x=40+i*160;
+  const lt=txt('',{x,y:LY+24,class:'m'},sv);el('rect',{x,y:LY+34,width:120,height:180,fill:'var(--bg)',stroke:'var(--line)'},sv);
+  const bar=el('rect',{x:x+20,width:80,fill:i%2?'var(--warm)':'var(--teal)',opacity:.85},sv);const ct=txt('',{x:x+44,y:LY+228},sv);
+  txt(n,{x:x+44,y:LY+54},sv);WB.push({lt,bar,ct,x})});
+let k,cnt,loss,NSAMP=40;
+function reset(sd){seed(sd);k=0;cnt=[0,0,0,0];loss=base.slice();loss[1]=+$('l').value;
+  cells.forEach(c=>c.col.forEach(q=>{q.v.setAttribute('fill','var(--bg)');q.a.setAttribute('fill','var(--bg)');q.vt.textContent='';q.at.textContent='';q.w.textContent=''}));
+  $('sp').textContent='—';draw()}
+function next(){if(k<3){const j=k;cells[j].col.forEach((q,i)=>{q.v.setAttribute('fill','var(--accent)');q.vt.textContent='视频';q.vt.setAttribute('style','fill:#fff');
+    if(act[j][i]){q.a.setAttribute('fill','var(--warm)');q.at.textContent='动作';q.at.setAttribute('style','fill:#fff')}else{q.at.textContent='—'}
+    if(j===2&&robot[i])q.w.textContent='权重↑'});$('sp').textContent=stages[j];k++;return true}
+  const i=k-3;if(i>=NSAMP)return false;const tot=loss.reduce((a,b)=>a+b,0);let u=rnd()*tot,w=0;while(u>loss[w]){u-=loss[w];w++}
+  cnt[w]++;$('sp').textContent='LoRA 抽第 '+(i+1)+' 个窗口';k++;draw();return true}
+function draw(){const mx=Math.max(4,...cnt);const tot=loss.reduce((a,b)=>a+b,0);
+  WB.forEach((B,i)=>{const h=cnt[i]/mx*140;B.bar.setAttribute('y',200+34+180-h);B.bar.setAttribute('height',Math.max(0.5,h));
+    B.ct.textContent=cnt[i]+' 次';B.lt.textContent='loss '+loss[i].toFixed(1)+' → 概率 '+(loss[i]/tot).toFixed(2)});
+  const n=cnt.reduce((a,b)=>a+b,0);$('sd').textContent=n;$('sh').textContent=n?((cnt[1]+cnt[3])/n*100).toFixed(0)+'%':'—'}
+$('l').oninput=()=>{$('lv').textContent=$('l').value;ANIM.stop();ANIM.reset(Date.now())};
+setupPlayer({captureSeed:5,reset,next},450);
+</script></body></html>

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>从像素到 token 再到去噪</title><link rel="stylesheet" href="anim.css"></head>
+<body><main>
+<h1>第 2 章 · 一张图变成多少 token，去噪时谁被重算</h1>
+<p class="sub">配套讲义：<a href="../lessons/02-architecture.html">第 2 章 · 架构：一条序列里同时画视频、出动作</a>。左 GR00T 2（Wan 2.1，空间 8×），右 Turbo（Wan 2.2，空间 16×），patch 都是 2×2。latent 网格是按规则推算的，与原文"280 token"和"4× smaller"吻合。</p>
+<div class="panel"><svg id="sv" viewBox="0 0 680 430"></svg></div>
+<div class="stats">
+<div class="stat"><div class="l">GR00T 2 视频 token（3 路 × 4 个 latent 帧）</div><div class="v" id="s1">—</div></div>
+<div class="stat"><div class="l">Turbo 视频 token</div><div class="v" id="s2">—</div></div>
+<div class="stat"><div class="l">完整 DiT 前向（joint）</div><div class="v" id="s3">0</div></div>
+<div class="stat"><div class="l">只算动作（cached）</div><div class="v" id="s4">0</div></div>
+</div>
+<div class="row ctl" id="ctl"><label>去噪配置</label></div>
+<div class="row"><button id="play">▶ 播放</button><button id="step">→ 单步</button><button id="reset">↺ 从头开始</button></div>
+<p class="note">看点：① 原图 224×320 → VAE 后 28×40（Turbo 14×20）→ 2×2 patch 后 14×20 = 280（Turbo 7×10 = 70）。② 3 路相机、2 个历史 + 2 个未来 latent 帧（未来帧数是示意）时，视频 token 是 3,360 对 840。③ 下方时间轴：joint 事件把视频和动作一起送进 DiT；cached 事件只更新动作，复用上一次 joint 的视频 K/V。切换"去噪配置"看 YAM 2v4a、Dexter 2v2a、G1 Turbo 1v2a 各要几次完整前向。</p>
+</main>
+<script src="anim.js"></script>
+<script>
+const sv=$('sv');
+const P=[{x:20,name:'GR00T 2（Wan 2.1，8×）',r:8,col:'var(--accent)'},{x:350,name:'Turbo（Wan 2.2，16×）',r:16,col:'var(--teal)'}];
+const BOX=150;
+P.forEach(p=>{txt(p.name,{x:p.x,y:20},sv);p.g=el('g',{},sv);p.cap=txt('',{x:p.x,y:206,class:'m'},sv)});
+const TL={y:250};txt('去噪时间轴（σ 从 1 走到 0）',{x:20,y:236,class:'m'},sv);
+const tg=el('g',{},sv);
+const CFG={'2v4a':'JCJC','2v2a':'JJ','1v2a':'JC'};let cfg='2v4a';
+const ctl=$('ctl');Object.keys(CFG).forEach(c=>{const b=document.createElement('button');b.textContent=c+(c==='2v4a'?'（YAM）':c==='2v2a'?'（Dexter）':'（G1 Turbo）');
+  b.onclick=()=>{cfg=c;[...ctl.querySelectorAll('button')].forEach(x=>x.classList.toggle('on',x===b));ANIM.stop();ANIM.reset(1)};if(c===cfg)b.classList.add('on');ctl.appendChild(b)});
+function grid(p,rows,cols,label){clear(p.g);const cw=Math.min(BOX*2/cols,BOX/rows);const w=cw*cols,h=cw*rows;
+  for(let i=0;i<rows;i++)for(let j=0;j<cols;j++)el('rect',{x:p.x+10+j*cw,y:34+i*cw,width:cw-0.6,height:cw-0.6,fill:p.col,opacity:.55},p.g);
+  p.cap.textContent=label}
+let k,ev,nj,nc;const STEPS=4;
+function reset(){k=0;ev=[];nj=nc=0;P.forEach(p=>{clear(p.g);p.cap.textContent=''});clear(tg);$('s1').textContent='—';$('s2').textContent='—';drawTL();stat()}
+function drawTL(){clear(tg);const seq=CFG[cfg];const W=640/Math.max(seq.length,1);
+  txt('视频 latent',{x:20,y:TL.y+28,class:'m'},tg);txt('动作 latent',{x:20,y:TL.y+78,class:'m'},tg);
+  for(let i=0;i<seq.length;i++){const x=110+i*(560/seq.length),w=560/seq.length-8,done=i<ev.length;const J=seq[i]==='J';
+    el('rect',{x,y:TL.y+10,width:w,height:30,rx:4,fill:done&&J?'var(--accent)':'var(--bg)',stroke:'var(--line)',opacity:done&&!J?.35:1},tg);
+    if(done&&!J){el('rect',{x,y:TL.y+10,width:w,height:30,rx:4,fill:'var(--accent-bg)',stroke:'var(--accent)','stroke-dasharray':'4 3'},tg);txt('复用 K/V',{x:x+6,y:TL.y+30,class:'m'},tg)}
+    el('rect',{x,y:TL.y+60,width:w,height:30,rx:4,fill:done?'var(--warm)':'var(--bg)',stroke:'var(--line)'},tg);
+    txt('k='+i+(J?' joint':' cached'),{x:x+4,y:TL.y+112,class:'m'},tg)}
+  el('line',{x1:110,y1:TL.y+130,x2:670,y2:TL.y+130,stroke:'var(--muted)','marker-end':''},tg);txt('σ=1',{x:104,y:TL.y+148,class:'m'},tg);txt('σ=0',{x:646,y:TL.y+148,class:'m'},tg)}
+function stat(){$('s3').textContent=nj;$('s4').textContent=nc}
+function next(){const seq=CFG[cfg];
+  if(k===0){P.forEach(p=>{clear(p.g);el('rect',{x:p.x+10,y:34,width:BOX*320/224*0.98,height:BOX*0.98,fill:'var(--bg)',stroke:p.col},p.g);
+    txt('原图 224 × 320',{x:p.x+70,y:110},p.g);p.cap.textContent='每路相机一帧'})}
+  else if(k===1){P.forEach(p=>grid(p,224/p.r,320/p.r,'VAE 后 '+224/p.r+' × '+320/p.r+' 个 latent 像素'))}
+  else if(k===2){P.forEach(p=>{const r=224/p.r/2,c=320/p.r/2;grid(p,r,c,'2×2 patch 后 '+r+' × '+c+' = '+r*c+' token')})}
+  else if(k===3){P.forEach((p,i)=>{const n=224/p.r/2*320/p.r/2;p.cap.textContent='× 3 路 × (2 历史 + 2 未来) = '+(n*12).toLocaleString()+' token';$(i?'s2':'s1').textContent=(n*12).toLocaleString()})}
+  else{const i=k-STEPS;if(i>=seq.length)return false;ev.push(seq[i]);if(seq[i]==='J')nj++;else nc++;drawTL();stat()}
+  k++;return true}
+setupPlayer({captureSeed:1,reset,next},900);
+</script></body></html>

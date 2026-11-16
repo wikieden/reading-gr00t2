@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>第 1 章 · 什么是 WAM：从&quot;看图出动作&quot;到&quot;先想象、再动手&quot; · 读懂 GR00T 2</title>
+<style>
+:root{--bg:#fbfbfa;--fg:#1f2328;--mute:#5d6470;--line:#e3e5e8;--card:#fff;--acc:#2f6fdf;--code:#f2f3f5;--quote:#f4f6fa}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181d;--fg:#e4e7ec;--mute:#9aa3b2;--line:#2c323b;--card:#1c2026;--acc:#7aa7ff;--code:#22272f;--quote:#1b2029}}
+:root[data-theme="dark"]{--bg:#15181d;--fg:#e4e7ec;--mute:#9aa3b2;--line:#2c323b;--card:#1c2026;--acc:#7aa7ff;--code:#22272f;--quote:#1b2029}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.75 -apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",sans-serif}
+a{color:var(--acc)}
+header.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+header.top .in{max-width:860px;margin:0 auto;padding:10px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:14px}
+header.top .brand{font-weight:600;color:var(--fg);text-decoration:none;margin-right:auto}
+header.top a{text-decoration:none}
+main{max-width:860px;margin:0 auto;padding:24px 16px 72px;overflow-wrap:anywhere}
+h1{font-size:28px;line-height:1.35;margin:8px 0 16px} h2{font-size:22px;margin:40px 0 12px;padding-top:8px;border-top:1px solid var(--line)} h3{font-size:18px;margin:28px 0 8px}
+img{max-width:100%;height:auto;border-radius:8px;border:1px solid var(--line);background:#fff}
+blockquote{margin:16px 0;padding:10px 16px;background:var(--quote);border-left:3px solid var(--acc);border-radius:4px;color:var(--mute)}
+blockquote p{margin:4px 0}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:var(--code);padding:12px 14px;border-radius:8px;overflow-x:auto} pre code{padding:0;background:none}
+table{border-collapse:collapse;display:block;overflow-x:auto;max-width:100%;margin:12px 0;font-size:15px}
+th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top} th{background:var(--code)}
+details{border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin:8px 0;background:var(--card)}
+details[open]{padding-bottom:10px} summary{cursor:pointer;color:var(--acc);font-weight:500}
+mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+.btn{display:inline-block;margin:4px 8px 4px 0;padding:6px 14px;border:1px solid var(--acc);border-radius:999px;text-decoration:none;font-size:14px}
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin:16px 0}
+.card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;color:inherit;text-decoration:none}
+.card:hover{border-color:var(--acc)} .card img{border:0;border-bottom:1px solid var(--line);border-radius:0;aspect-ratio:16/10;object-fit:contain;width:100%}
+.card .no{color:var(--mute);font-size:13px;padding:8px 12px 0} .card .t{padding:0 12px 12px;font-weight:500;line-height:1.5}
+.lead{font-size:17px;color:var(--mute)}
+footer{max-width:860px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font-size:13px}
+</style>
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"],["$$","$$"]],processEscapes:true,processEnvironments:true}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+</head><body>
+<header class="top"><div class="in">
+<a class="brand" href="../index.html">读懂 GR00T 2</a>
+<a href="../lessons/index.html">讲义目录</a>
+<a href="../animations/index.html">动画</a>
+<a href="../review.html">复习卡片</a>
+<a href="../lessons/appendix-glossary.html">缩写表</a>
+</div></header>
+<main>
+<h1 id="1-wam">第 1 章 · 什么是 WAM：从"看图出动作"到"先想象、再动手"</h1><p><a class="btn" href="../animations/01-vla-vs-wam.html">▶ 打开本章可交互动画</a></p>
+<blockquote>
+<p>本章回答：GR00T 2 自称 world-action model，它和我们在 VLA 专题里学的 π0 这类模型，到底差在哪？多学的那一部分有什么用？<br />
+讲解日期：2026-11-15 · 上一章：无 · 下一章：<a href="../lessons/02-architecture.html">第 2 章 架构</a><br />
+对应原文：<code>materials/text/gr00t2-whitepaper.txt</code> §1 L130–L132、§2 L257–L282、§4.4.1 Fig. 14 L1184–L1188、§4.1 Stage 1 L881–L886、§4.2.1 Fig. 10 L977–L999、§5 L1611–L1635<br />
+本章缩写：WAM = World-Action Model（世界 / 动作 / 模型）；VLA = Vision-Language-Action（视觉 / 语言 / 动作）；GR00T = Generalist Robot 00 Technology（通用 / 机器人 / 00 号 / 技术）；UMI = Universal Manipulation Interface（通用 / 操作 / 接口，手持采集夹爪）；MLP = Multi-Layer Perceptron（多层 / 感知机）。全部缩写见 <a href="../lessons/appendix-glossary.html">附录 · 缩写与术语表</a></p>
+</blockquote>
+<h2 id="_1">讲解</h2>
+<h3 id="2026-11-15">第一步：两种模型分别在学什么（2026-11-15）</h3>
+<p><strong>类比：背口诀的熟练工 vs. 先在脑子里演一遍的师傅。</strong></p>
+<ul>
+<li>熟练工（VLA）只背"看到这个画面、听到这句话 → 手这样动"。教他必须有人<strong>亲手示范动作</strong>，而且是用<strong>他这副身体</strong>示范。</li>
+<li>师傅（WAM）每次动手前先在脑子里放一段"接下来几秒会发生什么"的小电影，然后照着电影动手。那段电影<strong>看别人干活也能学</strong>——看录像不需要知道录像里的人每块肌肉怎么发力。</li>
+</ul>
+<p><strong>公式。</strong> 先约定符号（都是一个控制步 <span class="arithmatex">\(t\)</span> 上的量）：</p>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>读法</th>
+<th>意思</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(o_{t-h:t}\)</span></td>
+<td>"o 从 t 减 h 到 t"</td>
+<td>过去一小段相机画面（o = observation 观测，h = history 历史长度）。GR00T 2 是 0.8 s、5 fps（L262）</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(s_t\)</span></td>
+<td>"s t"</td>
+<td>机器人此刻的本体感知状态（s = state：关节角、夹爪宽度）</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\ell\)</span></td>
+<td>"ell"</td>
+<td>语言指令（ℓ = language）</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(a_{t:t+H}\)</span></td>
+<td>"a 从 t 到 t 加 H"</td>
+<td>接下来要执行的一整块动作（a = action，H = horizon 动作块长度）</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(o_{t+1:t+F}\)</span></td>
+<td>"o 从 t 加 1 到 t 加 F"</td>
+<td>接下来 F 帧的<strong>未来画面</strong>（F = future）</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(p_\theta(\cdot\mid\cdot)\)</span></td>
+<td>"p theta，竖线后面是条件"</td>
+<td>参数为 <span class="arithmatex">\(\theta\)</span> 的模型给出的条件概率分布</td>
+</tr>
+</tbody>
+</table>
+<p>VLA 学的是"给定现在，动作长什么样"：</p>
+<div class="arithmatex">\[\text{VLA:}\quad p_\theta\big(a_{t:t+H}\;\big|\;o_{t-h:t},\,s_t,\,\ell\big)\]</div>
+<p>WAM 学的是"给定现在，<strong>未来画面和动作一起</strong>长什么样"：</p>
+<div class="arithmatex">\[\text{WAM:}\quad p_\theta\big(o_{t+1:t+F},\;a_{t:t+H}\;\big|\;o_{t-h:t},\,s_t,\,\ell\big)\]</div>
+<p>区别只有一处：竖线左边多了 <span class="arithmatex">\(o_{t+1:t+F}\)</span>。白皮书的原话是 GR00T 2 <em>"jointly predicts future visual observations and embodied actions"</em>（L130–L131）。</p>
+<p><strong>例子（编的玩具数字）。</strong> 一维桌面，杯子位置用一个数表示。现在杯子在 3，机器人要把它推到 5，每步推 +1。</p>
+<table>
+<thead>
+<tr>
+<th>训练样本</th>
+<th>有什么</th>
+<th>VLA 能算的 loss 项</th>
+<th>WAM 能算的 loss 项</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>机器人遥操作：<span class="arithmatex">\(o_t=3\)</span>，未来 <span class="arithmatex">\(o=[4,5]\)</span>，动作 <span class="arithmatex">\(a=[+1,+1]\)</span></td>
+<td>画面 + 机器人动作</td>
+<td>动作 2 项</td>
+<td>未来画面 2 项 + 动作 2 项 = 4 项</td>
+</tr>
+<tr>
+<td>人类视频：<span class="arithmatex">\(o_t=3\)</span>，未来 <span class="arithmatex">\(o=[4,5]\)</span>，<strong>没有机器人动作</strong></td>
+<td>只有画面</td>
+<td><strong>0 项</strong>（没有标签可学）</td>
+<td>未来画面 2 项</td>
+</tr>
+</tbody>
+</table>
+<p>人类视频这一行是关键：对 VLA 来说它是废样本，对 WAM 来说它仍然在教"杯子被推的时候画面怎么变"。白皮书结论里说的就是这件事：预测未来让所有数据源有了一个共同目标，<em>"including human video that carries no robot actions"</em>（L1614–L1615）。GR00T 2 预训练的 Stage 1 干脆只做这一项——单视角、只预测未来视频、不出动作（L881–L886）。</p>
+<blockquote>
+<p>小心一个细节：Human-1M 其实带 3D 手部关键点，GR00T 2 在 Stage 2 会把跟踪到的手部姿态当动作监督（L890–L891）。但那是<strong>人手</strong>的动作，不是机器人的。"没有动作"准确地说是"没有目标机器人的动作"。</p>
+</blockquote>
+<p><strong>一句话</strong>：WAM 比 VLA 多预测一样东西——未来画面；而这一项对没有机器人动作的数据也能算 loss，所以人类视频能直接喂进来。</p>
+<h3 id="2026-11-15_1">第二步：动作"看着"想象出来的未来（2026-11-15）</h3>
+<p><strong>类比：先定目的地，再按自己的车开过去。</strong> 导航先在地图上画出"接下来 3 秒车会在哪"（未来画面），这张路线图谁开车都一样；然后"踩多少油门、打多少方向"取决于你开的是轿车还是卡车（动作）。路线图难画、可以大家一起学；油门方向盘好算、但每辆车不一样。</p>
+<p><strong>公式。</strong> 联合分布总能用概率的乘法法则拆成两半（这是数学恒等式，不是 GR00T 2 的假设）：</p>
+<div class="arithmatex">\[p_\theta\big(o_{t+1:t+F},a_{t:t+H}\mid c\big)=\underbrace{p_\theta\big(o_{t+1:t+F}\mid c\big)}_{\text{想象未来}}\cdot\underbrace{p_\theta\big(a_{t:t+H}\mid o_{t+1:t+F},\,c\big)}_{\text{照着未来出动作}}\]</div>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>读法</th>
+<th>意思</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(c\)</span></td>
+<td>"c"</td>
+<td>条件的简写（c = condition）：<span class="arithmatex">\(c=(o_{t-h:t},s_t,\ell)\)</span>，即历史画面、状态、指令</td>
+</tr>
+<tr>
+<td>第一项</td>
+<td>"给定 c，未来画面的概率"</td>
+<td><strong>前向动力学</strong>（forward dynamics）：世界接下来会变成什么样</td>
+</tr>
+<tr>
+<td>第二项</td>
+<td>"给定未来画面和 c，动作的概率"</td>
+<td><strong>逆动力学</strong>（inverse dynamics）：要让世界变成那样，这副身体该怎么动</td>
+</tr>
+</tbody>
+</table>
+<p>GR00T 2 在结构上就是这么安排的：<em>"action tokens attend to all video tokens, including the future frames being generated"</em>，所以 <em>"Actions can therefore follow the future the model imagines"</em>（L278–L280）。</p>
+<blockquote>
+<p>注意两点。① 这个拆法是帮助理解的读法；GR00T 2 并不是先画完视频再算动作，而是视频和动作<strong>一起去噪</strong>，去噪过程中动作 token 一直能看到越来越清楚的未来帧（第 2 章细讲）。② 第二项为什么"每个本体一个小头"：白皮书 §2 说状态和动作由 <em>"Small embodiment-specific MLPs"</em> 进出（L276–L277），MLP = Multi-Layer Perceptron（多层 / 感知机）。</p>
+</blockquote>
+<p><strong>例子（编的玩具数字）。</strong> 还是一维桌面，杯子在 3，想推到 5。约定两种身体：</p>
+<ul>
+<li><strong>人手</strong>：动作 +1 → 杯子走 1 格；</li>
+<li><strong>机器人</strong>：电机指令单位不同，动作 +2 → 杯子走 1 格。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>想象的未来（第一项）</th>
+<th>动作块（第二项）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>人手</td>
+<td><span class="arithmatex">\([4,5]\)</span></td>
+<td>每格差 1 → <span class="arithmatex">\([+1,+1]\)</span></td>
+</tr>
+<tr>
+<td>机器人</td>
+<td><span class="arithmatex">\([4,5]\)</span>（<strong>一样</strong>）</td>
+<td>每格差 1 × 2 → <span class="arithmatex">\([+2,+2]\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>两种身体，未来画面完全相同，只有"从画面差换算成动作"的那一步不同。所以：</p>
+<ul>
+<li>第一项可以拿<strong>所有人、所有机器人</strong>的视频一起学（第一步里那 92.3% 的人类视频就喂给它）；</li>
+<li>第二项很简单（这里就是乘个 2），但每个本体不一样，所以每个本体配一个小头就够了，少量本体数据就能学会。</li>
+</ul>
+<p>白皮书 Fig. 14 是这件事的真实版：只用 UMI 手持夹爪数据训练时，模型想象出的画面里是人手和蓝色 UMI 夹爪；加上少量 YAM 机械臂的无任务数据一起训后，同一个任务的想象画面里换成了 YAM 自己的机械臂（L1184–L1188）。</p>
+<p><strong>一句话</strong>：WAM 把"世界会怎么变"和"我这副身体怎么让它变"拆开——前者难、可共享，后者简单、按本体各配一个小头；动作 token 看着想象出的未来来生成。</p>
+<h3 id="2026-11-15_2">第三步：多学这一项，换来什么、付出什么（2026-11-15）</h3>
+<p><strong>类比：多请一位"看录像学徒"的老师。</strong> 老师（未来画面这一项）让学徒能看所有录像学东西——收益是见识多了；代价是每节课都要放录像，课时（算力）大头花在放录像上。</p>
+<p><strong>收益：证据是一条 scaling 曲线。</strong> 机器人数据固定，只改预训练里人类视频的比例，在 72 个 Dexter 任务上测（§4.2.1，Fig. 10，L977–L999）：</p>
+<table>
+<thead>
+<tr>
+<th>人类视频比例</th>
+<th>0%</th>
+<th>1%</th>
+<th>10%</th>
+<th>100%</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>真机成功率</td>
+<td>18%</td>
+<td>27%</td>
+<td>28%</td>
+<td>41%</td>
+</tr>
+</tbody>
+</table>
+<p>符号上看，横轴是"第一项 <span class="arithmatex">\(p(o_{t+1:t+F}\mid c)\)</span> 吃到的人类视频量"，纵轴是"第二项输出的动作在真机上成没成"。第一项学得越好，第二项照着的未来越靠谱。作者原话：<em>"none of the metrics levels off at 100%"</em>（L998），还没饱和。</p>
+<blockquote>
+<p>这里的"比例"指 Human-1M 里<strong>多视角</strong>人类视频的比例：1% / 10% / 100% 分别是 0.87k / 8.1k / 84.4k 小时（附录 C.1.5 L3584–L3585），不是全部 40 万小时。</p>
+<p>读这张表还要小心：0% → 1% 这一步同时多了一个共享的人类视频预训练阶段（L988），所以 18 → 27 不全是"1% 数据"的功劳；最干净的对比是 1% → 100%：27% → 41%。</p>
+</blockquote>
+<p><strong>代价：视频 token 远多于动作 token。</strong> 用第 2 章会细讲的数字先粗算一次（GR00T 2 设定，§2 L270–L272）：每路相机每个 latent 帧 280 个 token。设 3 路相机、历史 2 个 latent 帧、未来 2 个 latent 帧（未来帧数是编的示意），动作块 48 步、按每步 1 个 token 估：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>计算</th>
+<th>token 数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>视频</td>
+<td><span class="arithmatex">\(3\times(2+2)\times280\)</span></td>
+<td>3,360</td>
+</tr>
+<tr>
+<td>动作</td>
+<td><span class="arithmatex">\(48\times1\)</span></td>
+<td>48</td>
+</tr>
+<tr>
+<td>视频占比</td>
+<td><span class="arithmatex">\(3360/(3360+48)\)</span></td>
+<td>≈ 98.6%</td>
+</tr>
+</tbody>
+</table>
+<p>几乎全部算力花在"画未来"上。这就是 GR00T 2 Turbo 存在的原因（第 2 章），也是作者在 §5 列的头号开放问题：<em>"most of the tokens it predicts encode future video, much of which does not bear on the next action"</em>（L1634–L1635）。</p>
+<p><strong>一句话</strong>：多预测未来画面，换来了"人类视频越多、机器人越强"的 scaling；代价是 token 大头都在视频上，推理更慢。</p>
+<h3 id="vla-wam-loss">动画演示：同一批样本，VLA 和 WAM 各能算几项 loss</h3>
+<p><img alt="同一批样本，VLA 和 WAM 各能算几项 loss" src="../animations/01-vla-vs-wam.gif" /></p>
+<p>可交互版：<a href="../animations/01-vla-vs-wam.html">animations/01-vla-vs-wam.html</a>（▶ 播放、→ 单步、↺ 从头开始；人类视频占比滑块（0–100%））</p>
+<p><strong>怎么看</strong>：
+1. 每来一条样本，左边亮出它带什么：遥操作有画面和机器人动作，人类视频只有画面（第一步）。
+2. 中间 VLA 那一列：人类视频一格都亮不了——对 VLA 是废样本。
+3. 右边 WAM 那一列：人类视频照样亮两格"未来画面"；遥操作四格全亮（第一步的玩具表）。
+4. 底部两根累计条：人类视频越多，两者差得越远——这就是第三步说的"收益"。</p>
+<h2 id="_2">练习与作答记录</h2>
+<p><strong>题 1</strong>（第一步 VLA vs WAM）：
+（a）GR00T 2 预训练用了人类视频 402,730 h、UMI 10,184 h、遥操作 23,500 h（§4.2）。假设一个 VLA 只能用"有机器人格式动作"的数据（UMI 和遥操作，人手姿态不算），它能直接用上的时长占全部时长的百分之几？剩下的部分对 WAM 有什么用？
+（b）用自己的话说：WAM 的公式里竖线左边多出来的那一项是什么？为什么它对人类视频也能算 loss？</p>
+<blockquote>
+<p>作答（2026-11-15）：（a）7.7%，剩下的人类视频给 WAM 当未来画面监督<br />
+点评：✓ （a）对。<span class="arithmatex">\((10{,}184+23{,}500)/(402{,}730+10{,}184+23{,}500)=33{,}684/436{,}414\approx7.7\%\)</span>。反过来说，<strong>92.3% 的预训练时长</strong>对只学动作的 VLA 是直接用不上的，WAM 靠"未来画面"这一项把它们全部变成监督。补一句更精确的说法：这 92.3% 教的是"手碰到物体后画面怎么变"（视觉动力学先验），Stage 2 里人手姿态还会额外提供一份"别人身体的动作"。<br />
+作答（2026-11-15）：（b）多出来的是未来画面，人类视频有画面所以能算<br />
+点评：✓ （b）对。再往深一层：未来画面的"标准答案"就是<strong>同一段视频的后几帧</strong>，把视频按时间切成"过去当输入、未来当目标"就行，不需要任何人标注。这叫自监督（self-supervised），所以它能吃下 40 万小时这种规模。</p>
+</blockquote>
+<p><strong>题 2</strong>（第二步 动作看着想象出来的未来）：
+（a）沿用第二步的玩具规则（机器人动作 +2 推动杯子 1 格）。杯子现在在 2，模型想象的未来是 <span class="arithmatex">\([3,5]\)</span>。机器人的动作块是什么？如果换成人手（+1 推 1 格）呢？
+（b）为什么说"想象未来画面"这一块可以让人和各种机器人共用，而"从未来推出动作"这一块要给每个本体单独配一个小头？用玩具例子里的数说明。</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<p><strong>题 3</strong>（第三步 收益与代价）：
+（a）只看 Fig. 10 里 1% → 100% 这一段，人类视频量涨了多少倍？真机成功率涨了多少个百分点？为什么作者说"还没饱和"是个重要结论？
+（b）在第三步的 token 粗算里，如果把相机从 3 路加到 4 路（YAM 用 4 路），视频 token 变成多少？视频占比大约变成多少？</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<h2 id="_3">口诀</h2>
+<blockquote>
+<p>多画一帧未来图，人类录像全能读；<br />
+世界怎变大家学，身体怎动各一头；<br />
+人看越多机越强，算力大头在画图。</p>
+</blockquote>
+<h2 id="_4">本章复习卡片</h2>
+<p>G01、G02、G03（练习做完后，按答错、卡住的地方再补。）</p>
+<h2 id="_5">附录 · 延伸阅读</h2>
+<blockquote>
+<p>留给以后深入学习用，不影响本章主线。★ 是建议先读的。</p>
+</blockquote>
+<h3 id="_6">推荐阅读</h3>
+<table>
+<thead>
+<tr>
+<th>读什么</th>
+<th>读哪里</th>
+<th>读它为了什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>★ GR00T 2 白皮书</td>
+<td>§2 Overview L257–L282</td>
+<td>输入输出和一句话架构，第 2 章的原文</td>
+</tr>
+<tr>
+<td>★ GR00T 2 白皮书</td>
+<td>§5 L1611–L1660</td>
+<td>作者自己总结"为什么预测未来有用"以及还不知道的部分</td>
+</tr>
+<tr>
+<td>GR00T N1 论文</td>
+<td><code>vla-deep-dive/materials/text/papers/gr00t-n1-2503.14734.txt</code> 里搜 latent action</td>
+<td>对照前代是怎么"间接"用人类视频的</td>
+</tr>
+<tr>
+<td>VLA 讲义第 8 章 π0</td>
+<td><code>vla-deep-dive/notes/lessons/08-pi0.md</code></td>
+<td>VLA 一侧的代表：只预测动作的 flow matching</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_7">数学原理</h3>
+<ul>
+<li><strong>联合分布与条件分布</strong>：<span class="arithmatex">\(p(x,y\mid c)\)</span> 是"给定 <span class="arithmatex">\(c\)</span> 时 <span class="arithmatex">\(x\)</span> 和 <span class="arithmatex">\(y\)</span> 一起出现的概率"。WAM 把未来画面和动作放在同一个联合分布里学。</li>
+<li><strong>概率的乘法法则</strong>：<span class="arithmatex">\(p(x,y\mid c)=p(x\mid c)\,p(y\mid x,c)\)</span>，对任何分布都成立。</li>
+<li><strong>前向 / 逆动力学</strong>：前向是"给定状态和动作，预测下一状态"；逆是"给定当前和下一状态，反推动作"。逆动力学通常比前向简单，但依赖具体身体。</li>
+<li><strong>缺失标签时的部分监督</strong>：联合目标是两个 loss 相加；某个样本缺动作标签，就只算视频那一项，相当于对该项乘一个 0/1 掩码。</li>
+</ul>
+<h3 id="_8">公式清单</h3>
+<table>
+<thead>
+<tr>
+<th>公式</th>
+<th>意思</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(p_\theta(a_{t:t+H}\mid o_{t-h:t},s_t,\ell)\)</span></td>
+<td>VLA：给定历史画面、状态、指令，预测动作块</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(p_\theta(o_{t+1:t+F},a_{t:t+H}\mid o_{t-h:t},s_t,\ell)\)</span></td>
+<td>WAM：同样条件下，联合预测未来画面和动作块</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(p(o',a\mid c)=p(o'\mid c)\,p(a\mid o',c)\)</span></td>
+<td>乘法法则：前向动力学（想象未来）× 逆动力学（照着未来出动作）</td>
+</tr>
+</tbody>
+</table><nav class="pager"><span></span><a href="02-architecture.html">第 2 章 · 架构：一条序列里同时画视频、出动作 →</a></nav>
+</main>
+<footer>来自个人学习仓库的对话讲义，含练习作答记录。源码：<a href="https://github.com/wikieden/reading-gr00t2">github.com/wikieden/reading-gr00t2</a></footer>
+</body></html>

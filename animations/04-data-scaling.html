@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>遥操作配比与人类视频 scaling</title><link rel="stylesheet" href="anim.css"></head>
+<body><main>
+<h1>第 4 章 · 遥操作的时长与采样比例，人类视频越多越好</h1>
+<p class="sub">配套讲义：<a href="../lessons/04-data-mixture.html">第 4 章 · 数据配方：人类视频、UMI、遥操作各管什么</a>。上：白皮书 Tab. 11（小时数与"在机器人数据里被采样的比例"）；下：Fig. 10 真机成功率（72 个 Dexter 任务 × 3 次）。</p>
+<div class="panel"><svg id="sv" viewBox="0 0 680 470"></svg></div>
+<div class="row"><button id="play">▶ 播放</button><button id="step">→ 单步</button><button id="reset">↺ 从头开始</button></div>
+<p class="note">看点：上半部分每个来源两根条——灰色是时长（小时），彩色是采样比例；灵巧手（Sharpa、Wuji）的彩色条相对灰色条更长，说明被上采样了。下半部分横轴是多视角人类视频小时数（对数），四个点依次出现：0 → 0.87k → 8.1k → 84.4k 小时，成功率一路往上、到最右还没变平。0% 那个点没有共享的人类视频预训练阶段，单独标出。</p>
+</main>
+<script src="anim.js"></script>
+<script>
+const sv=$('sv');
+const src=[['YAM',15146,51.2],['ABC-130k（YAM）',3591,10.4],['Sharpa 灵巧手',2890,20.6],['Wuji 灵巧手',1256,14.0],['Unitree G1',275,1.3],['DROID Franka',350,2.5]];
+const X0=150,W=400,HMAX=16000,SMAX=55;
+txt('灰：时长（小时，满格 16,000 h）   彩：采样比例（满格 55%）',{x:X0,y:18,class:'m'},sv);
+const R=src.map((s,i)=>{const y=30+i*30;txt(s[0],{x:10,y:y+16,class:'m'},sv);
+  return{h:el('rect',{x:X0,y,height:10,fill:'var(--muted)',opacity:.45,width:0},sv),s:el('rect',{x:X0,y:y+12,height:10,fill:i===2||i===3?'var(--warm)':'var(--accent)',width:0},sv),
+  t:txt('',{x:X0,y:y+21,class:'m'},sv)}});
+const GY=250,GH=170,GX=80,GW=540;
+txt('真机成功率 %',{x:10,y:GY-8,class:'m'},sv);
+el('rect',{x:GX,y:GY,width:GW,height:GH,fill:'var(--bg)',stroke:'var(--line)'},sv);
+[10,20,30,40,50].forEach(v=>{const y=GY+GH-v/50*GH;el('line',{x1:GX,y1:y,x2:GX+GW,y2:y,stroke:'var(--line)','stroke-dasharray':'2 3'},sv);txt(String(v),{x:GX-24,y:y+4,class:'m'},sv)});
+const pts=[[0,18,'0%'],[870,27,'1%（0.87k h）'],[8100,28,'10%（8.1k h）'],[84400,41,'100%（84.4k h）']];
+const xs=h=>h===0?GX+30:GX+90+(Math.log10(h)-Math.log10(870))/(Math.log10(84400)-Math.log10(870))*(GW-140);
+const ys=v=>GY+GH-v/50*GH;
+const line=el('polyline',{fill:'none',stroke:'var(--accent)','stroke-width':2},sv);
+const dots=pts.map(p=>{const g=el('g',{opacity:0},sv);el('circle',{cx:xs(p[0]),cy:ys(p[1]),r:6,fill:p[0]?'var(--accent)':'var(--muted)'},g);
+  txt(p[1]+'%',{x:xs(p[0])-12,y:ys(p[1])-12},g);txt(p[2],{x:xs(p[0])-30,y:GY+GH+18,class:'m'},g);return g});
+const se=Math.sqrt(0.41*0.59/216)*100;const eb=el('g',{opacity:0},sv);
+el('line',{x1:xs(84400),y1:ys(41+se),x2:xs(84400),y2:ys(41-se),stroke:'var(--accent)','stroke-width':2},eb);
+txt('±'+se.toFixed(1)+' 点（1 SEM，讲义第三步算过）',{x:xs(84400)-250,y:ys(41-se)+18,class:'m'},eb);
+const gap=el('g',{opacity:0},sv);txt('0% 缺共享预训练阶段，1% → 100% 才是干净对比',{x:GX+10,y:GY+GH-10,class:'m'},gap);
+let k;
+function reset(){k=0;R.forEach(r=>{r.h.setAttribute('width',0);r.s.setAttribute('width',0);r.t.textContent=''});dots.forEach(d=>d.setAttribute('opacity',0));
+  eb.setAttribute('opacity',0);gap.setAttribute('opacity',0);line.setAttribute('points','')}
+function next(){if(k<src.length){const s=src[k],r=R[k];r.h.setAttribute('width',s[1]/HMAX*W);r.s.setAttribute('width',s[2]/SMAX*W);
+    r.t.setAttribute('x',X0+Math.max(s[1]/HMAX,s[2]/SMAX)*W+6);r.t.textContent=s[1].toLocaleString()+' h · '+s[2]+'%';k++;return true}
+  const i=k-src.length;if(i<4){dots[i].setAttribute('opacity',1);if(i>=1)line.setAttribute('points',pts.slice(1,i+1).map(p=>xs(p[0])+','+ys(p[1])).join(' '));if(i===0)gap.setAttribute('opacity',1);k++;return true}
+  if(i===4){eb.setAttribute('opacity',1);k++;return true}return false}
+setupPlayer({captureSeed:1,reset,next},800);
+</script></body></html>

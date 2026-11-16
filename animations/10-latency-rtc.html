@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>推理加速与动作块交接</title><link rel="stylesheet" href="anim.css"></head>
+<body><main>
+<h1>第 10 章 · 一层层削延迟，再让相邻动作块接得上</h1>
+<p class="sub">配套讲义：<a href="../lessons/10-deployment.html">第 10 章 · 部署：从 720 ms 到 124 ms，再让动作连得上、做得比人快</a>。上：白皮书 Fig. 19（G1 上 GR00T 2 Turbo，500 次中位数，单位 ms，每一行是在上一行基础上再加一项）。下：块交接的三种做法，曲线是示意。</p>
+<div class="panel"><svg id="sv" viewBox="0 0 680 470"></svg></div>
+<div class="row ctl" id="ctl"><label>硬件</label></div>
+<div class="row"><button id="play">▶ 播放</button><button id="step">→ 单步</button><button id="reset">↺ 从头开始</button></div>
+<p class="note">看点：上半部分每步亮一行，条越来越短，TensorRT 那一行缩得最多。下半部分：灰线是旧块，黑点之前的灰实线是"已承诺执行的前缀"；异步执行时新块不看前缀，接缝处跳一下；干净前缀 RTC 接得上但一路贴着旧计划走；noisy-prefix RTC 平滑接上，又能转向新目标（绿色叉）。</p>
+</main>
+<script src="anim.js"></script>
+<script>
+const sv=$('sv');
+const D={'RTX 5090':[224.73,183.66,95.05,90.01,54.79,38.40],'Jetson Thor':[720.41,614.53,256.12,254.00,182.22,123.97]};
+const labs=['基线（eager BF16）','+ 运行时优化','+ TensorRT','+ CUDA graph','+ FP8 混合精度','+ 去噪步 2v4a → 1v2a'];
+let dev='Jetson Thor';const ctl=$('ctl');Object.keys(D).forEach(d=>{const b=document.createElement('button');b.textContent=d;if(d===dev)b.classList.add('on');
+  b.onclick=()=>{dev=d;[...ctl.querySelectorAll('button')].forEach(x=>x.classList.toggle('on',x===b));ANIM.stop();ANIM.reset(1)};ctl.appendChild(b)});
+const X0=170,W=440;const bars=labs.map((l,i)=>{const y=14+i*30;txt(l,{x:10,y:y+15,class:'m'},sv);
+  return{r:el('rect',{x:X0,y,height:20,fill:i===2?'var(--warm)':'var(--accent)',width:0,rx:3},sv),t:txt('',{x:X0,y:y+15,class:'m'},sv)}});
+const GY=230,GH=200,GX=60,GW=580;
+txt('动作值',{x:10,y:GY-6,class:'m'},sv);el('rect',{x:GX,y:GY,width:GW,height:GH,fill:'var(--bg)',stroke:'var(--line)'},sv);
+const tx=t=>GX+t*GW,ty=v=>GY+GH/2-v*GH*0.4;
+const old=t=>Math.sin(2.2*t+0.3)*0.9, goal=1.0,T0=0.45,TC=0.6;
+let pts=[];for(let t=0;t<=1.0001;t+=0.01)pts.push(tx(t)+','+ty(old(t)));
+el('polyline',{points:pts.join(' '),fill:'none',stroke:'var(--muted)','stroke-width':1.5,'stroke-dasharray':'5 4'},sv);
+pts=[];for(let t=0;t<=TC;t+=0.01)pts.push(tx(t)+','+ty(old(t)));el('polyline',{points:pts.join(' '),fill:'none',stroke:'var(--muted)','stroke-width':3},sv);
+el('circle',{cx:tx(TC),cy:ty(old(TC)),r:5,fill:'var(--text)'},sv);txt('已承诺前缀结束',{x:tx(TC)-40,y:ty(old(TC))-12,class:'m'},sv);
+el('line',{x1:tx(T0),y1:GY,x2:tx(T0),y2:GY+GH,stroke:'var(--line)'},sv);txt('新块开始推理',{x:tx(T0)-36,y:GY+GH+16,class:'m'},sv);
+const gx=tx(1),gy=ty(goal);el('line',{x1:gx-8,y1:gy-8,x2:gx+8,y2:gy+8,stroke:'var(--good)','stroke-width':3},sv);el('line',{x1:gx-8,y1:gy+8,x2:gx+8,y2:gy-8,stroke:'var(--good)','stroke-width':3},sv);
+const modes=[['异步执行（不看前缀）','var(--bad)',t=>{const s=(t-TC)/(1-TC);return 0.2+(goal-0.2)*s}],
+  ['干净前缀 RTC（贴着旧计划）','var(--amber)',t=>old(t)+0.08*(t-TC)],
+  ['noisy-prefix RTC','var(--good)',t=>{const s=(t-TC)/(1-TC),a=old(TC),d=2.2*Math.cos(2.2*TC+0.3)*0.9*(1-TC);return (2*s*s*s-3*s*s+1)*a+(s*s*s-2*s*s+s)*d+(-2*s*s*s+3*s*s)*goal}]];
+const mg=el('g',{},sv);const leg=txt('',{x:GX+10,y:GY+18},sv);
+let k;
+function reset(){k=0;bars.forEach(b=>{b.r.setAttribute('width',0);b.t.textContent=''});clear(mg);leg.textContent=''}
+function next(){const v=D[dev],mx=v[0];if(k<6){const b=bars[k];b.r.setAttribute('width',v[k]/mx*W);b.t.setAttribute('x',X0+v[k]/mx*W+6);b.t.textContent=v[k].toFixed(1)+' ms';k++;return true}
+  const i=k-6;if(i>=3)return false;clear(mg);const m=modes[i];const p=[];for(let t=TC;t<=1.0001;t+=0.01)p.push(tx(t)+','+ty(m[2](t)));
+  el('line',{x1:tx(TC),y1:ty(old(TC)),x2:tx(TC),y2:ty(m[2](TC)),stroke:m[1],'stroke-width':2,'stroke-dasharray':'2 2'},mg);
+  el('polyline',{points:p.join(' '),fill:'none',stroke:m[1],'stroke-width':3},mg);leg.textContent=m[0];leg.setAttribute('style','fill:'+m[1]);k++;return true}
+setupPlayer({captureSeed:1,reset,next},1000);
+</script></body></html>

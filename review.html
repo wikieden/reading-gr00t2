@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>gr00t2 · 复习卡片 · 读懂 GR00T 2</title>
+<style>
+:root{--bg:#fbfbfa;--fg:#1f2328;--mute:#5d6470;--line:#e3e5e8;--card:#fff;--acc:#2f6fdf;--code:#f2f3f5;--quote:#f4f6fa}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181d;--fg:#e4e7ec;--mute:#9aa3b2;--line:#2c323b;--card:#1c2026;--acc:#7aa7ff;--code:#22272f;--quote:#1b2029}}
+:root[data-theme="dark"]{--bg:#15181d;--fg:#e4e7ec;--mute:#9aa3b2;--line:#2c323b;--card:#1c2026;--acc:#7aa7ff;--code:#22272f;--quote:#1b2029}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.75 -apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",sans-serif}
+a{color:var(--acc)}
+header.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+header.top .in{max-width:860px;margin:0 auto;padding:10px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:14px}
+header.top .brand{font-weight:600;color:var(--fg);text-decoration:none;margin-right:auto}
+header.top a{text-decoration:none}
+main{max-width:860px;margin:0 auto;padding:24px 16px 72px;overflow-wrap:anywhere}
+h1{font-size:28px;line-height:1.35;margin:8px 0 16px} h2{font-size:22px;margin:40px 0 12px;padding-top:8px;border-top:1px solid var(--line)} h3{font-size:18px;margin:28px 0 8px}
+img{max-width:100%;height:auto;border-radius:8px;border:1px solid var(--line);background:#fff}
+blockquote{margin:16px 0;padding:10px 16px;background:var(--quote);border-left:3px solid var(--acc);border-radius:4px;color:var(--mute)}
+blockquote p{margin:4px 0}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:var(--code);padding:12px 14px;border-radius:8px;overflow-x:auto} pre code{padding:0;background:none}
+table{border-collapse:collapse;display:block;overflow-x:auto;max-width:100%;margin:12px 0;font-size:15px}
+th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top} th{background:var(--code)}
+details{border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin:8px 0;background:var(--card)}
+details[open]{padding-bottom:10px} summary{cursor:pointer;color:var(--acc);font-weight:500}
+mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+.btn{display:inline-block;margin:4px 8px 4px 0;padding:6px 14px;border:1px solid var(--acc);border-radius:999px;text-decoration:none;font-size:14px}
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin:16px 0}
+.card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;color:inherit;text-decoration:none}
+.card:hover{border-color:var(--acc)} .card img{border:0;border-bottom:1px solid var(--line);border-radius:0;aspect-ratio:16/10;object-fit:contain;width:100%}
+.card .no{color:var(--mute);font-size:13px;padding:8px 12px 0} .card .t{padding:0 12px 12px;font-weight:500;line-height:1.5}
+.lead{font-size:17px;color:var(--mute)}
+footer{max-width:860px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font-size:13px}
+</style>
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"],["$$","$$"]],processEscapes:true,processEnvironments:true}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+</head><body>
+<header class="top"><div class="in">
+<a class="brand" href="index.html">读懂 GR00T 2</a>
+<a href="lessons/index.html">讲义目录</a>
+<a href="animations/index.html">动画</a>
+<a href="review.html">复习卡片</a>
+<a href="lessons/appendix-glossary.html">缩写表</a>
+</div></header>
+<main>
+<h1 id="gr00t2">gr00t2 · 复习卡片</h1>
+<p>必须记住的概念和公式，以及讲解中卡住、追问、答错的地方，都追加到这里。每张卡片的"来源"链接到 <a href="lessons/index.html">lessons/</a> 里对应的章节，忘了就回去重读。卡片编号用 G01 起。</p>
+<h2 id="_1">怎么用</h2>
+<ol>
+<li>先只看<strong>问题</strong>，自己说出或写出答案；</li>
+<li>再点开"答案"核对；</li>
+<li>答对了，在"复习记录"里补一个日期；答错了就当天再看一遍。</li>
+</ol>
+<p><strong>复习间隔</strong>（按答对的次数）：第 1 次 → 隔 1 天 → 隔 3 天 → 隔 7 天 → 隔 14 天 → 隔 30 天。连续答对 5 次的卡片移到文末"已掌握"。</p>
+<p>想复习时说一声"复习"，我会挑到期的卡片来考你。</p>
+<hr />
+<h2 id="wam">WAM 基础</h2>
+<h3 id="g01-vla-wam">G01 · 写出 VLA 和 WAM 各自学的条件分布，两者差在哪一项？</h3>
+<p>来源：<a href="lessons/01-what-is-a-wam.html">第 1 章 · 第一步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<div class="arithmatex">\[\text{VLA:}\ p_\theta(a_{t:t+H}\mid o_{t-h:t},s_t,\ell)\qquad \text{WAM:}\ p_\theta(o_{t+1:t+F},\,a_{t:t+H}\mid o_{t-h:t},s_t,\ell)\]</div>
+<p>条件完全一样；WAM 在竖线左边多了<strong>未来画面</strong> <span class="arithmatex">\(o_{t+1:t+F}\)</span>。符号：<span class="arithmatex">\(o\)</span> 观测、<span class="arithmatex">\(s\)</span> 本体状态、<span class="arithmatex">\(\ell\)</span> 语言、<span class="arithmatex">\(a\)</span> 动作块、<span class="arithmatex">\(h\)</span> 历史长度、<span class="arithmatex">\(H\)</span> 动作块长度、<span class="arithmatex">\(F\)</span> 未来帧数。</p>
+</details>
+<h3 id="g02-gr00t-2-wam">G02 · GR00T 2 预训练数据里，带机器人格式动作的数据占多少时长？其余部分为什么对 WAM 仍有用？</h3>
+<p>来源：<a href="lessons/01-what-is-a-wam.html#练习与作答记录">第 1 章 · 练习 1(a)</a> · 加入 2026-11-15 · 复习记录：2026-11-15 ✓</p>
+<details>
+<summary>答案</summary>
+<p>UMI 10,184 h + 遥操作 23,500 h = 33,684 h，占全部 436,414 h 的 <strong>约 7.7%</strong>。剩下 92.3% 是人类视频（402,730 h）：没有目标机器人的动作，但 WAM 可以用它算"预测未来画面"那一项 loss，学到手和物体交互时画面怎么变。</p>
+</details>
+<h3 id="g03-wam">G03 · WAM 的联合分布怎么拆成两项？哪项可以跨本体共享、哪项要每个本体一个小头？为什么？</h3>
+<p>来源：<a href="lessons/01-what-is-a-wam.html">第 1 章 · 第二步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<div class="arithmatex">\[p(o_{t+1:t+F},a\mid c)=\underbrace{p(o_{t+1:t+F}\mid c)}_{\text{前向动力学：想象未来}}\cdot\underbrace{p(a\mid o_{t+1:t+F},c)}_{\text{逆动力学：照着未来出动作}}\]</div>
+<p>前向动力学（世界怎么变）对人和各种机器人都一样，难学，用全部数据（含人类视频）一起学；逆动力学（这副身体怎么让世界那样变）简单但因身体而异，所以每个本体配一个小 MLP 头。GR00T 2 里动作 token 能看到正在生成的未来帧（L278–L280）；但视频和动作是一起去噪的，拆成两项只是理解方式。</p>
+</details>
+<h2 id="_2">架构</h2>
+<h3 id="g04-224320-latent-gr00t-2-turbo-token">G04 · 一路 224×320 相机、一个 latent 帧，GR00T 2 和 Turbo 各多少 token？怎么算出来的？</h3>
+<p>来源：<a href="lessons/02-architecture.html">第 2 章 · 第一步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<p><span class="arithmatex">\(N=\frac{H}{rp}\cdot\frac{W}{rp}\)</span>，patch <span class="arithmatex">\(p=2\)</span>。GR00T 2（Wan 2.1，<span class="arithmatex">\(r=8\)</span>）：<span class="arithmatex">\(14\times20=280\)</span>；Turbo（Wan 2.2，<span class="arithmatex">\(r=16\)</span>）：<span class="arithmatex">\(7\times10=70\)</span>，少 4 倍。时间方向因果 VAE：<span class="arithmatex">\(T\)</span> 帧 → <span class="arithmatex">\(1+(T-1)/4\)</span> 个 latent 帧，5 帧历史 → 2 个。</p>
+</details>
+<h3 id="g05-gr00t-2-dit">G05 · GR00T 2 的四类输入各用什么编码器、冻不冻、怎么接进 DiT？</h3>
+<p>来源：<a href="lessons/02-architecture.html">第 2 章 · 第二步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<table>
+<thead>
+<tr>
+<th>输入</th>
+<th>编码</th>
+<th>冻结</th>
+<th>接入</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>视频</td>
+<td>Wan 2.1 VAE + 1×2×2 patch + 相机编号 embedding</td>
+<td>VAE 冻结</td>
+<td>主序列 token</td>
+</tr>
+<tr>
+<td>语言</td>
+<td>Cosmos-Reason1</td>
+<td>冻结</td>
+<td>cross-attention</td>
+</tr>
+<tr>
+<td>状态</td>
+<td>每本体 MLP</td>
+<td>训练</td>
+<td>主序列</td>
+</tr>
+<tr>
+<td>动作</td>
+<td>每本体 MLP 进、解码器出</td>
+<td>训练</td>
+<td>主序列</td>
+</tr>
+</tbody>
+</table>
+<p>主干：Cosmos-Predict2.5-2B，32 层、宽 2048、16 头。</p>
+</details>
+<h3 id="g06-2v4ajoint-pass-cached-pass">G06 · "2v4a"是什么意思？joint pass 和 cached pass 有什么区别？</h3>
+<p>来源：<a href="lessons/02-architecture.html">第 2 章 · 第三步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<p>2 步视频去噪 + 4 步动作去噪。joint pass：视频和动作一起过 DiT（<span class="arithmatex">\(k=0,2\)</span>）；cached pass：只更新动作，复用上一次 joint pass 的视频/状态 K/V（<span class="arithmatex">\(k=1,3\)</span>），便宜。YAM 2v4a、Dexter 2v2a、G1 Turbo 1v2a。</p>
+</details>
+<h2 id="_3">训练与数据</h2>
+<h3 id="g07-gr00t-2">G07 · GR00T 2 预训练的三个阶段各学什么？</h3>
+<p>来源：<a href="lessons/03-pretraining-recipe.html">第 3 章 · 第一步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<p>从 Cosmos-Predict2.5-2B 初始化。Stage 1：单视角、主要人类视频，<strong>只预测未来视频</strong>；Stage 2：多视角视频-动作联合，接上本体 MLP，人类用手部姿态当动作，无有效动作标签就不算动作 loss；Stage 3：继续联合训练，加大机器人（尤其 YAM）比重。</p>
+</details>
+<h3 id="g08-gr00t-2">G08 · GR00T 2 的少样本适配具体怎么做？</h3>
+<p>来源：<a href="lessons/03-pretraining-recipe.html">第 3 章 · 第三步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<p>rank-32 LoRA 加在 Transformer 每个线性层，其余全冻结；loss 同预训练；每条 episode 切 100 个窗口，按冻结模型 loss 成比例采样（难段多练）；单张 RTX 5090 约 30 分钟；训完合并进权重。Dexter-50：零样本 40% → 1 条 71% → 5 条 95%。</p>
+</details>
+<h3 id="g09">G09 · 三类预训练数据各多少小时、各管什么？</h3>
+<p>来源：<a href="lessons/04-data-mixture.html">第 4 章 · 第一步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<p>人类视频 402,730 h（覆盖面 / 见识）；UMI 10,184 h（任务导向、机器人兼容的动作格式）；遥操作 23.5k h（锚定本体、可执行动作；其中 YAM 约 18.7k h）。灵巧手在采样时被上调（Sharpa 时长 12.3%、采样 20.6%）。</p>
+</details>
+<h3 id="g10-scaling">G10 · 人类视频 scaling 实验控制了什么、改变了什么、结果如何？</h3>
+<p>来源：<a href="lessons/04-data-mixture.html">第 4 章 · 第三步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<p>控制：架构、配方、同一份 Dexter 数据（3 epoch）、同工位背靠背、同操作员。改变：多视角人类视频 0% / 1% / 10% / 100% = 0 / 0.87k / 8.1k / 84.4k h。真机 SR 18 / 27 / 28 / 41%（72 任务 × 3 次），未饱和；0% 缺共享预训练阶段，1% → 100% 最干净。</p>
+</details>
+<h2 id="rl">跨本体与 RL</h2>
+<h3 id="g11-x-adapt">G11 · X-Adapt 的核心配方是哪一句话？</h3>
+<p>来源：<a href="lessons/05-x-adapt.html">第 5 章 · 第一步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<p><strong>没有机器人的演示定义任务，目标机器人的无任务玩耍数据定义本体，跨本体预训练把两者接起来。</strong> DexUMI 外骨骼复刻目标手，所以那只手上不需要玩耍数据。</p>
+</details>
+<h3 id="g12-umi-yam">G12 · UMI → YAM 迁移的三条发现是什么？哪一项消融影响最大？</h3>
+<p>来源：<a href="lessons/05-x-adapt.html">第 5 章 · 第二步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<p>① 和 YAM 无任务数据联合训练补上外观和场景差距；② 模型吸收外观、不吸收几何——腕视图必须按 YAM 相机重渲染；③ 动作改写进 YAM 动作空间、用 YAM 动作头。腕视图不处理或随机变形，两个长程任务 SR 直接归零。</p>
+</details>
+<h3 id="g13-cps">G13 · CPS 怎么让确定性去噪变得可探索？为什么叫"系数保持"？</h3>
+<p>来源：<a href="lessons/06-rl-post-training.html">第 6 章 · 第一步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<p><span class="arithmatex">\(\mu=(1-\sigma_{k+1})\hat a_{\text{data}}+\sigma_{k+1}\cos(\eta\pi/2)\hat\epsilon\)</span>，<span class="arithmatex">\(s_k=\text{clip}(\sigma_{k+1}\sin(\eta\pi/2),s_{\min},s_{\max})\)</span>，<span class="arithmatex">\(a^{(k+1)}=\mu+s_k\xi\)</span>。只加在被执行的动作坐标上，视频去噪不变。<span class="arithmatex">\(\cos^2+\sin^2=1\)</span>，噪声部分总方差保持 <span class="arithmatex">\(\sigma_{k+1}^2\)</span>；每步是显式高斯，可算 <span class="arithmatex">\(\log\pi\)</span>。<span class="arithmatex">\(\eta=0\)</span> 退回确定性。</p>
+</details>
+<h3 id="g14-grpo">G14 · 带记忆的组相对基线公式是什么？解决了普通 GRPO 的什么问题？</h3>
+<p>来源：<a href="lessons/06-rl-post-training.html">第 6 章 · 第二步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<p><span class="arithmatex">\(b_{g,i}=\dfrac{h_gm_g+\sum_{j\ne i}R_{g,j}}{h_g+N_g-1}\)</span>，<span class="arithmatex">\(A_{g,i}=R_{g,i}-b_{g,i}\)</span>，<span class="arithmatex">\(m_g\)</span> 是该上下文的历史均值（EMA 维护）。普通 GRPO 一组全成功或全失败时优势全为 0；掺入历史均值后"比过去好/差"仍有信号。效果最好的是 GRPO 诱导自模仿（88 / 98 / 94 / 96%）。</p>
+</details>
+<h2 id="_4">系统</h2>
+<h3 id="g15-agentic-gr00t-2-agent-gr00t-2-agent-gr00t-2">G15 · Agentic GR00T 2 里 agent 和 GR00T 2 怎么分工？agent 帮 GR00T 2 的四种方式？</h3>
+<p>来源：<a href="lessons/07-agentic.html">第 7 章 · 第一步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<p>agent（S2）管 what：拆任务、监控、写代码、校验、恢复；GR00T 2（S1）管 how：接触式操作。四种：Augment（任务级程序调 GR00T 2）、Assist（掉件/卡住时用 CaP 修再交还）、Guide（WAM API 视觉标记）、Improve（AutoRL 改训练算法）。工具经 MCP 暴露：<code>wam_act</code>、<code>stop_wam</code>、观测、CaP 原语。</p>
+</details>
+<h3 id="g16-wam-api">G16 · WAM API 的视觉标记怎么画？效果和代价？</h3>
+<p>来源：<a href="lessons/07-agentic.html">第 7 章 · 第二步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<p>agent 给哪只手 + 抓取点 + 释放点（像素），直接画在当前场景帧上：实心圆 = 抓取，加号 = 释放；洋红 = 左手，青色 = 右手。监督从演示的夹爪/手状态自动生成。短程 44.2 → 76.8%，长程 1.7 → 53.3%。代价：agent 每轮约 7.5 s vs 策略 0.6 s，机器人约 38% 时间在等。</p>
+</details>
+<h3 id="g17">G17 · 人形三层栈各是谁、多快、跑在哪？</h3>
+<p>来源：<a href="lessons/08-humanoid.html">第 8 章 · 第一步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<p>S2 可选推理模型 → S1 GR00T 2 Turbo，约 1 Hz 出 1.6 s 块 = 80 个 SONIC latent token + 夹爪宽度，Jetson AGX Thor（124 ms）→ S0 SONIC 50 Hz 解码成关节目标，Jetson Orin NX → 关节 PD 1000 Hz。同一 token 空间贯穿采集、仿真、部署。</p>
+</details>
+<h3 id="g18">G18 · "以运动为中心的仿真扩增"怎么做？效果如何？</h3>
+<p>来源：<a href="lessons/08-humanoid.html">第 8 章 · 第三步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<p>保持遥操作的全身动作不变，在仿真里用同一个 SONIC 回放，CMA-ES 拟合桌子和物体摆放；只保留"抓住、提起、在等重扰动力下拿稳"的拟合；再在大量生成房间里渲染。G1 分布外抓放：Turbo 6.7 → 63.3%，GR00T 1.7 6.7 → 40.0%。</p>
+</details>
+<h2 id="_5">评测与部署</h2>
+<h3 id="g19-bradley-terry-elo">G19 · Bradley-Terry 和 Elo 的公式？分差怎么换成胜率？</h3>
+<p>来源：<a href="lessons/09-evaluation.html">第 9 章 · 第二步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<p><span class="arithmatex">\(P(i\text{ 胜 }j)=p_i/(p_i+p_j)\)</span>；<span class="arithmatex">\(\text{Elo}_i=1500+400\log_{10}(p_i/\bar p)\)</span>；所以 <span class="arithmatex">\(P=1/(1+10^{-\Delta/400})\)</span>。100 Elo ≈ 64%。GR00T 2 vs π0.5 +236（≈ 80%），vs GR00T 1.7 +95。</p>
+</details>
+<h3 id="g20-geararena-ab-bootstrap">G20 · GearArena 为什么做盲测 A/B？为什么按任务做 bootstrap？</h3>
+<p>来源：<a href="lessons/09-evaluation.html">第 9 章 · 第一、二步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<p>绝对成功率随工位、操作员、硬件、日期漂移；同场景、同操作员、几分钟内随机顺序跑 2–4 个 checkpoint，漂移在比较里抵消。同一任务的多次试验摆同一场景、不独立，独立单位是任务，所以按任务重采样（500 次，每次重算任务归一化权重），否则区间会假窄约 30%。</p>
+</details>
+<h3 id="g21-95-vs-99">G21 · 仿真代理评测和真机的相关性多高？分辨 95% vs 99% 要多少次真机试验？</h3>
+<p>来源：<a href="lessons/09-evaluation.html">第 9 章 · 第三步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<p>25 个 YAM 任务、14 个 checkpoint：Pearson 进度 0.93、成功率 0.92、Elo 0.93（达到完美仿真器的 95–99%）。95% vs 99% 每策略约 285 次；99% vs 99.9% 超过 1,000 次（α = 0.05，功效 80%）。</p>
+</details>
+<h3 id="g22-gr00t-2">G22 · GR00T 2 推理加速有哪几步？哪一步收益最大？</h3>
+<p>来源：<a href="lessons/10-deployment.html">第 10 章 · 第一步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<p>去重复计算（复用文本特征、预计算时间步、cached pass 复用 K/V）→ TensorRT 编译 → CUDA graph 回放 → FP8 混合精度 → 减少去噪步（如 2v4a → 1v2a）+ 视频编码预取。TensorRT 单项最大。总加速 2.9–7.2×；G1 Turbo：RTX 5090 38 ms、Jetson Thor 124 ms。</p>
+</details>
+<h3 id="g23-noisy-prefix-rtc">G23 · noisy-prefix RTC 是什么？为什么不用干净前缀？</h3>
+<p>来源：<a href="lessons/10-deployment.html">第 10 章 · 第二步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<p>训练时以"已承诺执行的动作前缀"为条件、并给前缀加高斯噪声；推理时用干净前缀。干净前缀训练让模型过度依赖旧计划，160 ms 延迟下成功率反而降到 30.7%；加噪后 34.8%（异步 32.8%），jerk 降 69–87%。只需约 5k 步微调。</p>
+</details>
+<h3 id="g24-gr00t-2">G24 · GR00T 2 作者的三条观察是什么？</h3>
+<p>来源：<a href="lessons/11-open-problems.html">第 11 章 · 第一步</a> · 加入 2026-11-15 · 复习记录：</p>
+<details>
+<summary>答案</summary>
+<p>① 机器人学到的很多东西不必来自机器人数据；② 可靠性来自多种机制叠加（预训练广度 + 纠错/RL 精度 + agent 记忆校验恢复），不来自预训练本身；③ 进步依赖测量（盲测对比 + 校准仿真）。</p>
+</details>
+</main>
+<footer>来自个人学习仓库的对话讲义，含练习作答记录。源码：<a href="https://github.com/wikieden/reading-gr00t2">github.com/wikieden/reading-gr00t2</a></footer>
+</body></html>

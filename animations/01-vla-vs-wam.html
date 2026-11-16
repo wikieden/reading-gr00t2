@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VLA 与 WAM 能用的数据</title><link rel="stylesheet" href="anim.css"></head>
+<body><main>
+<h1>第 1 章 · 同一批样本，VLA 和 WAM 各能算几项 loss</h1>
+<p class="sub">配套讲义：<a href="../lessons/01-what-is-a-wam.html">第 1 章 · 什么是 WAM：从&quot;看图出动作&quot;到&quot;先想象、再动手&quot;</a>。玩具设定沿用讲义：每条样本有 2 帧未来画面；机器人样本另有 2 步动作，人类视频没有机器人动作。</p>
+<div class="panel"><svg id="sv" viewBox="0 0 680 380"></svg></div>
+<div class="stats">
+<div class="stat"><div class="l">已到样本（机器人 / 人类）</div><div class="v" id="sn">0</div></div>
+<div class="stat"><div class="l">VLA 能算的 loss 项</div><div class="v" id="sv1">0</div></div>
+<div class="stat"><div class="l">WAM 能算的 loss 项</div><div class="v" id="sv2">0</div></div>
+<div class="stat"><div class="l">对 VLA 是废样本</div><div class="v bad" id="sw">0</div></div>
+</div>
+<div class="row ctl"><label>人类视频占比 <b id="hv">70</b>%</label><input id="h" type="range" min="0" max="100" step="10" value="70"></div>
+<div class="row"><button id="play">▶ 播放</button><button id="step">→ 单步</button><button id="reset">↺ 从头开始</button></div>
+<p class="note">看点：每来一条样本，左边亮出它带什么（画面 / 动作），右边两行分别是 VLA 和 WAM 这条样本能算的 loss 格子。人类视频那一行，VLA 一格都亮不了，WAM 仍然能亮两格"未来画面"。拖滑块改人类视频占比，看两根累计条差多远。</p>
+</main>
+<script src="anim.js"></script>
+<script>
+const sv=$('sv');const N=12;
+txt('样本流',{x:20,y:24,class:'m'},sv);
+txt('VLA：只学 p(a | o, s, ℓ)',{x:250,y:24},sv);
+txt('WAM：学 p(o未来, a | o, s, ℓ)',{x:470,y:24},sv);
+const rows=[];
+for(let i=0;i<N;i++){const y=36+i*22;
+  const r={chip:el('rect',{x:20,y,width:200,height:18,rx:4,fill:'var(--bg)',stroke:'var(--line)'},sv),
+    lab:txt('',{x:28,y:y+13,class:'m'},sv),vla:[],wam:[]};
+  for(let j=0;j<2;j++)r.vla.push(el('rect',{x:250+j*24,y,width:20,height:18,rx:3,fill:'var(--bg)',stroke:'var(--line)'},sv));
+  for(let j=0;j<4;j++)r.wam.push(el('rect',{x:470+j*24,y,width:20,height:18,rx:3,fill:'var(--bg)',stroke:'var(--line)'},sv));
+  rows.push(r)}
+txt('格子：',{x:250,y:312,class:'m'},sv);
+el('rect',{x:290,y:302,width:14,height:12,fill:'var(--accent)',rx:2},sv);txt('未来画面项',{x:308,y:312,class:'m'},sv);
+el('rect',{x:380,y:302,width:14,height:12,fill:'var(--warm)',rx:2},sv);txt('动作项',{x:398,y:312,class:'m'},sv);
+const BX=250,BW=400;
+txt('VLA 累计',{x:20,y:340,class:'m'},sv);txt('WAM 累计',{x:20,y:366,class:'m'},sv);
+const b1=el('rect',{x:BX,y:328,height:14,fill:'var(--warm)',rx:3},sv),b2=el('rect',{x:BX,y:354,height:14,fill:'var(--accent)',rx:3},sv);
+const t1=txt('',{x:BX,y:340,class:'m'},sv),t2=txt('',{x:BX,y:366,class:'m'},sv);
+let k,seq,cv,cw,nr,nh;
+function reset(seedv){seed(seedv);k=0;cv=cw=nr=nh=0;const p=+$('h').value/100;
+  seq=[];const nH=Math.round(p*N);for(let i=0;i<N;i++)seq.push(i<nH?'h':'r');
+  for(let i=N-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[seq[i],seq[j]]=[seq[j],seq[i]]}
+  rows.forEach(r=>{r.chip.setAttribute('fill','var(--bg)');r.lab.textContent='';
+    r.vla.forEach(c=>c.setAttribute('fill','var(--bg)'));r.wam.forEach(c=>c.setAttribute('fill','var(--bg)'))});draw()}
+function next(){if(k>=N)return false;const r=rows[k],h=seq[k]==='h';
+  r.chip.setAttribute('fill',h?'var(--accent-bg)':'var(--card)');
+  r.lab.textContent=h?'人类视频：画面 ✓ 机器人动作 ✗':'遥操作：画面 ✓ 机器人动作 ✓';
+  r.wam[0].setAttribute('fill','var(--accent)');r.wam[1].setAttribute('fill','var(--accent)');cw+=2;
+  if(!h){r.vla.forEach(c=>c.setAttribute('fill','var(--warm)'));r.wam[2].setAttribute('fill','var(--warm)');r.wam[3].setAttribute('fill','var(--warm)');cv+=2;cw+=2;nr++}else nh++;
+  k++;draw();return true}
+function draw(){const mx=4*N;b1.setAttribute('width',Math.max(1,cv/mx*BW));b2.setAttribute('width',Math.max(1,cw/mx*BW));
+  t1.setAttribute('x',BX+cv/mx*BW+6);t2.setAttribute('x',BX+cw/mx*BW+6);t1.textContent=cv+' 项';t2.textContent=cw+' 项';
+  $('sn').textContent=k+'（'+nr+' / '+nh+'）';$('sv1').textContent=cv;$('sv2').textContent=cw;$('sw').textContent=nh+' 条'}
+$('h').oninput=()=>{$('hv').textContent=$('h').value;ANIM.stop();ANIM.reset(Date.now())};
+setupPlayer({captureSeed:3,reset,next},700);
+</script></body></html>

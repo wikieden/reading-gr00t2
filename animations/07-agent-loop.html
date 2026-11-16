@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent 与 GR00T 2 的协作时间线</title><link rel="stylesheet" href="anim.css"></head>
+<body><main>
+<h1>第 7 章 · 慢脑盯着、快手干活：一次掉件恢复</h1>
+<p class="sub">配套讲义：<a href="../lessons/07-agentic.html">第 7 章 · Agentic GR00T 2：大模型当&quot;慢脑&quot;，GR00T 2 当&quot;快手&quot;</a>。时间线是示意（事件顺序按附录 G.1 的 observe → reason → act → verify 循环，时长取讲义里的量级：agent 一轮约 7.5 s）；右下角是 WAM API 的视觉标记画法。</p>
+<div class="panel"><svg id="sv" viewBox="0 0 680 400"></svg></div>
+<div class="stats">
+<div class="stat"><div class="l">时间</div><div class="v" id="st">0 s</div></div>
+<div class="stat"><div class="l">当前事件</div><div class="v" id="se" style="font-size:15px">—</div></div>
+<div class="stat"><div class="l">机器人停着等的时间</div><div class="v" id="sw">0 s</div></div>
+</div>
+<div class="row"><button id="play">▶ 播放</button><button id="step">→ 单步</button><button id="reset">↺ 从头开始</button></div>
+<p class="note">看点：三条泳道是 agent（S2）、GR00T 2（S1）和 CaP 技能。GR00T 2 是默认执行者；agent 发现零件掉了，先 stop_wam，再调 CaP 技能把零件捡回，校验通过后把控制权交还 GR00T 2。灰色斜纹是机器人停着等 agent 想的时间——白皮书里这部分中位占 episode 的 38%，是 §5 说的"层级延迟"问题。</p>
+</main>
+<script src="anim.js"></script>
+<script>
+const sv=$('sv');const X0=110,W=550,T=60,xs=t=>X0+t/T*W;
+const lanes=[['Agent（S2）',40,'var(--purple)'],['GR00T 2（S1）',100,'var(--accent)'],['CaP 技能',160,'var(--teal)']];
+lanes.forEach(l=>{txt(l[0],{x:10,y:l[1]+20,class:'m'},sv);el('rect',{x:X0,y:l[1],width:W,height:30,fill:'var(--bg)',stroke:'var(--line)'},sv)});
+const defs=el('defs',{},sv);const pat=el('pattern',{id:'hatch',width:6,height:6,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},defs);el('rect',{width:3,height:6,fill:'var(--muted)',opacity:.35},pat);
+[0,10,20,30,40,50,60].forEach(t=>{el('line',{x1:xs(t),y1:196,x2:xs(t),y2:202,stroke:'var(--muted)'},sv);txt(t+'s',{x:xs(t)-8,y:216,class:'m'},sv)});
+const ev=[
+ {l:1,a:0,b:14,n:'wam_act("装轮子")'},
+ {l:0,a:14,b:15,n:'observe：get_image'},
+ {l:1,a:14,b:22,n:'wam_act("装第二个轮子")'},
+ {l:0,a:22,b:23,n:'observe：发现轮子掉了'},
+ {l:0,a:23,b:30.5,n:'reason：决定恢复（约 7.5 s）',wait:1},
+ {l:1,a:30.5,b:31,n:'stop_wam'},
+ {l:2,a:31,b:39,n:'drop_any_object → 定位 → 抓回'},
+ {l:0,a:39,b:40,n:'verify：轮子在手里'},
+ {l:1,a:40,b:56,n:'wam_act("装第二个轮子")'},
+ {l:0,a:56,b:58,n:'verify：阶段完成'}];
+const g=el('g',{},sv);
+const IX=40,IY=250;txt('WAM API 视觉标记（示意）',{x:IX,y:IY,class:'m'},sv);
+el('rect',{x:IX,y:IY+10,width:300,height:130,rx:6,fill:'var(--bg)',stroke:'var(--line)'},sv);
+el('rect',{x:IX+40,y:IY+60,width:40,height:30,rx:4,fill:'var(--muted)',opacity:.4},sv);el('rect',{x:IX+200,y:IY+40,width:70,height:70,rx:6,fill:'none',stroke:'var(--muted)'},sv);
+const mk=el('g',{opacity:0},sv);el('circle',{cx:IX+60,cy:IY+75,r:8,fill:'#d4378c'},mk);
+el('line',{x1:IX+225,y1:IY+75,x2:IX+245,y2:IY+75,stroke:'#d4378c','stroke-width':4},mk);el('line',{x1:IX+235,y1:IY+65,x2:IX+235,y2:IY+85,stroke:'#d4378c','stroke-width':4},mk);
+txt('● 抓取点   ✚ 释放点   洋红 = 左手，青色 = 右手',{x:IX,y:IY+160,class:'m'},sv);
+txt('"把左边零件放进盒子"',{x:IX+360,y:IY+60},sv);txt('agent 只说"在哪、哪只手"，',{x:IX+360,y:IY+86,class:'m'},sv);txt('怎么抓、怎么移由 GR00T 2 决定',{x:IX+360,y:IY+104,class:'m'},sv);
+let k,wait;
+function reset(){k=0;wait=0;clear(g);mk.setAttribute('opacity',0);$('st').textContent='0 s';$('se').textContent='—';$('sw').textContent='0 s'}
+function next(){if(k>=ev.length){if(mk.getAttribute('opacity')==='0'){mk.setAttribute('opacity',1);$('se').textContent='另一种引导：在图上画点';return true}return false}
+  const e=ev[k],L=lanes[e.l];el('rect',{x:xs(e.a),y:L[1]+3,width:Math.max(3,xs(e.b)-xs(e.a)),height:24,rx:3,fill:L[2],opacity:.85},g);
+  if(e.wait){el('rect',{x:xs(e.a),y:103,width:xs(e.b)-xs(e.a),height:24,fill:'url(#hatch)'},g);txt('机器人在等',{x:xs(e.a)+4,y:120,class:'m'},g);wait+=e.b-e.a}
+  $('st').textContent=e.b+' s';$('se').textContent=e.n;$('sw').textContent=wait.toFixed(1)+' s';k++;return true}
+setupPlayer({captureSeed:1,reset,next},900);
+</script></body></html>

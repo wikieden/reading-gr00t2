@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>第 6 章 · RL 后训练：让会做的事做得更稳 · 读懂 GR00T 2</title>
+<style>
+:root{--bg:#fbfbfa;--fg:#1f2328;--mute:#5d6470;--line:#e3e5e8;--card:#fff;--acc:#2f6fdf;--code:#f2f3f5;--quote:#f4f6fa}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181d;--fg:#e4e7ec;--mute:#9aa3b2;--line:#2c323b;--card:#1c2026;--acc:#7aa7ff;--code:#22272f;--quote:#1b2029}}
+:root[data-theme="dark"]{--bg:#15181d;--fg:#e4e7ec;--mute:#9aa3b2;--line:#2c323b;--card:#1c2026;--acc:#7aa7ff;--code:#22272f;--quote:#1b2029}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.75 -apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",sans-serif}
+a{color:var(--acc)}
+header.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+header.top .in{max-width:860px;margin:0 auto;padding:10px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:14px}
+header.top .brand{font-weight:600;color:var(--fg);text-decoration:none;margin-right:auto}
+header.top a{text-decoration:none}
+main{max-width:860px;margin:0 auto;padding:24px 16px 72px;overflow-wrap:anywhere}
+h1{font-size:28px;line-height:1.35;margin:8px 0 16px} h2{font-size:22px;margin:40px 0 12px;padding-top:8px;border-top:1px solid var(--line)} h3{font-size:18px;margin:28px 0 8px}
+img{max-width:100%;height:auto;border-radius:8px;border:1px solid var(--line);background:#fff}
+blockquote{margin:16px 0;padding:10px 16px;background:var(--quote);border-left:3px solid var(--acc);border-radius:4px;color:var(--mute)}
+blockquote p{margin:4px 0}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:var(--code);padding:12px 14px;border-radius:8px;overflow-x:auto} pre code{padding:0;background:none}
+table{border-collapse:collapse;display:block;overflow-x:auto;max-width:100%;margin:12px 0;font-size:15px}
+th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top} th{background:var(--code)}
+details{border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin:8px 0;background:var(--card)}
+details[open]{padding-bottom:10px} summary{cursor:pointer;color:var(--acc);font-weight:500}
+mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+.btn{display:inline-block;margin:4px 8px 4px 0;padding:6px 14px;border:1px solid var(--acc);border-radius:999px;text-decoration:none;font-size:14px}
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin:16px 0}
+.card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;color:inherit;text-decoration:none}
+.card:hover{border-color:var(--acc)} .card img{border:0;border-bottom:1px solid var(--line);border-radius:0;aspect-ratio:16/10;object-fit:contain;width:100%}
+.card .no{color:var(--mute);font-size:13px;padding:8px 12px 0} .card .t{padding:0 12px 12px;font-weight:500;line-height:1.5}
+.lead{font-size:17px;color:var(--mute)}
+footer{max-width:860px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font-size:13px}
+</style>
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"],["$$","$$"]],processEscapes:true,processEnvironments:true}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+</head><body>
+<header class="top"><div class="in">
+<a class="brand" href="../index.html">读懂 GR00T 2</a>
+<a href="../lessons/index.html">讲义目录</a>
+<a href="../animations/index.html">动画</a>
+<a href="../review.html">复习卡片</a>
+<a href="../lessons/appendix-glossary.html">缩写表</a>
+</div></header>
+<main>
+<h1 id="6-rl">第 6 章 · RL 后训练：让会做的事做得更稳</h1><p><a class="btn" href="../animations/06-cps-grpo.html">▶ 打开本章可交互动画</a></p>
+<blockquote>
+<p>本章回答：监督微调后接触类任务只有 40–76%，GR00T 2 怎么用强化学习推到 88–98%？一个"确定性去噪"的生成模型怎么探索、怎么算策略梯度？没有真机时能不能在世界模型里练？<br />
+讲解日期：2026-11-15 · 上一章：<a href="../lessons/05-x-adapt.html">第 5 章 X-Adapt</a> · 下一章：<a href="../lessons/07-agentic.html">第 7 章 Agentic</a><br />
+对应原文：<code>materials/text/gr00t2-whitepaper.txt</code> §3.3 L530–L576；§4.1 L904–L952；§4.5.3 L1382–L1400；附录 F.1 L5108–L5330（式 10–18）、F.2 L5326–L5410、F.5 L5627 起<br />
+本章缩写：RL = Reinforcement Learning（强化 / 学习）；SFT = Supervised Fine-Tuning（监督 / 微调）；GRPO = Group Relative Policy Optimization（组 / 相对 / 策略 / 优化）；PPO = Proximal Policy Optimization（近端 / 策略 / 优化）；CPS = Coefficients-Preserving Sampling（系数 / 保持 / 采样）；DPPO = Diffusion Policy Policy Optimization（扩散策略的 / 策略 / 优化）；MDP = Markov Decision Process（马尔可夫 / 决策 / 过程）；SAC = Soft Actor-Critic（软 / 演员-评论家）；EMA = Exponential Moving Average（指数 / 滑动 / 平均）；pp = percentage points（百分点）。全部缩写见 <a href="../lessons/appendix-glossary.html">附录 · 缩写与术语表</a></p>
+</blockquote>
+<h2 id="_1">讲解</h2>
+<h3 id="cps2026-11-15">第一步：确定性去噪怎么"探索"——CPS（2026-11-15）</h3>
+<p><strong>类比：让一个一直走同一条路的人，偶尔随机拐一下。</strong> 平时 GR00T 2 去噪是确定的（给定初始噪声，结果固定），像每天走同一条路；RL 需要它"试试别的走法"，才知道哪条更好。CPS 就是在每一步去噪时，往<strong>动作</strong>里加一点受控的随机，而视频去噪不动。</p>
+<p><strong>公式</strong>（附录 F 式 10、11，L5130–L5165）。第 <span class="arithmatex">\(k\)</span> 次去噪事件，当前动作 latent <span class="arithmatex">\(a^{(k)}\)</span>，模型速度 <span class="arithmatex">\(v\)</span>，噪声水平 <span class="arithmatex">\(\sigma_k\)</span>（从 <span class="arithmatex">\(\sigma_0=1\)</span> 降到 <span class="arithmatex">\(\sigma_4=0\)</span>）：</p>
+<div class="arithmatex">\[\hat a_{\text{data}}=a^{(k)}-\sigma_k v,\qquad \hat\epsilon=a^{(k)}+(1-\sigma_k)v\]</div>
+<div class="arithmatex">\[a^{(k+1)}=\underbrace{(1-\sigma_{k+1})\hat a_{\text{data}}+\sigma_{k+1}\cos\!\big(\tfrac{\eta\pi}{2}\big)\hat\epsilon}_{\mu\text{：转移均值}}+\underbrace{\text{clip}\big(\sigma_{k+1}\sin(\tfrac{\eta\pi}{2}),s_{\min},s_{\max}\big)}_{s_k\text{：标准差}}\cdot\xi,\quad \xi\sim\mathcal N(0,I)\]</div>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>读法</th>
+<th>意思</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(\eta\)</span></td>
+<td>"eta"</td>
+<td>探索强度旋钮：<span class="arithmatex">\(\eta=0\)</span> 时 <span class="arithmatex">\(\sin=0\)</span>，无噪声，退回确定性去噪</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\cos^2+\sin^2=1\)</span></td>
+<td>—</td>
+<td>"系数保持"：确定部分和随机部分的总方差和原来的 <span class="arithmatex">\(\sigma_{k+1}^2\)</span> 一样，所以不会把 latent 的尺度弄乱</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(s_{\min},s_{\max}\)</span></td>
+<td>—</td>
+<td>标准差的上下限（<span class="arithmatex">\(s_{\min}&gt;0\)</span> 保证密度可算）</td>
+</tr>
+</tbody>
+</table>
+<p>每一步是一个<strong>显式高斯</strong>，于是可以算 <span class="arithmatex">\(\log\pi_\theta\)</span>，做策略梯度——把去噪链当成一个多步 MDP，这是 DPPO 的思路（L5120–L5123）。噪声只加在<strong>被执行的</strong>前 <span class="arithmatex">\(H_e\)</span> 个动作上（L5160–L5162）。</p>
+<p><strong>例子（编的一维数）。</strong> <span class="arithmatex">\(a^{(k)}=0.5\)</span>，<span class="arithmatex">\(\sigma_k=0.5\)</span>，<span class="arithmatex">\(\sigma_{k+1}=0.25\)</span>，<span class="arithmatex">\(v=-3\)</span>，<span class="arithmatex">\(\eta=0.5\)</span>（<span class="arithmatex">\(\cos45°=\sin45°\approx0.707\)</span>）：</p>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>计算</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(\hat a_{\text{data}}\)</span></td>
+<td><span class="arithmatex">\(0.5-0.5\times(-3)\)</span></td>
+<td>2.0</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\hat\epsilon\)</span></td>
+<td><span class="arithmatex">\(0.5+0.5\times(-3)\)</span></td>
+<td>−1.0</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\mu\)</span></td>
+<td><span class="arithmatex">\(0.75\times2+0.25\times0.707\times(-1)\)</span></td>
+<td>≈ 1.323</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(s_k\)</span></td>
+<td><span class="arithmatex">\(0.25\times0.707\)</span></td>
+<td>≈ 0.177</td>
+</tr>
+</tbody>
+</table>
+<p>下一步动作 latent <span class="arithmatex">\(\sim\mathcal N(1.323,\,0.177^2)\)</span>；若 <span class="arithmatex">\(\eta=0\)</span>，就是确定的 <span class="arithmatex">\(0.75\times2+0.25\times(-1)=1.25\)</span>。</p>
+<p><strong>一句话</strong>：CPS 只在动作去噪里注入总方差不变的高斯噪声，换来可探索、可算概率的策略。</p>
+<h3 id="2026-11-15">第二步：带记忆的组相对优势（2026-11-15）</h3>
+<p><strong>类比：考试打分不只和同桌比，也和自己以前比。</strong> 一组同学全部满分，组内比较人人"0 分进步"；但如果这道题你过去只有一半时候做对，这次全对就该被表扬。</p>
+<p><strong>公式</strong>（附录 F.1.1，L5193–L5205）。一个"重置上下文" <span class="arithmatex">\(g\)</span>（任务 + 场景布局）跑 <span class="arithmatex">\(N_g\)</span> 次，第 <span class="arithmatex">\(i\)</span> 次回报 <span class="arithmatex">\(R_{g,i}\in\{0,1\}\)</span>，历史均值 <span class="arithmatex">\(m_g\)</span>，掺 <span class="arithmatex">\(h_g\)</span> 个值为 <span class="arithmatex">\(m_g\)</span> 的伪回报：</p>
+<div class="arithmatex">\[b_{g,i}=\frac{h_g m_g+\sum_{j\ne i}R_{g,j}}{h_g+N_g-1},\qquad A_{g,i}=R_{g,i}-b_{g,i}\]</div>
+<p>再用 PPO 式截断目标更新（式 15，L5242）：<span class="arithmatex">\(\mathcal J=\mathbb E\big[\min(r\hat A,\ \text{clip}(r,1-\epsilon_{\text{clip}},1+\epsilon_{\text{clip}})\hat A)\big]\)</span>，<span class="arithmatex">\(r=\exp(\ell_\theta-\ell_{\text{old}})\)</span> 是单个转移的似然比，<strong>不跨去噪事件连乘</strong>；每个 minibatch 只算一个 joint 事件（<span class="arithmatex">\(k=0\)</span> 和 <span class="arithmatex">\(k=2\)</span> 轮流），携带的 latent 截断梯度（L5246–L5252）。</p>
+<p><strong>例子（编的数）。</strong> <span class="arithmatex">\(m_g=0.5\)</span>，<span class="arithmatex">\(h_g=2\)</span>，<span class="arithmatex">\(N_g=4\)</span>，本轮回报 <span class="arithmatex">\([1,1,1,0]\)</span>。看第 1 次（<span class="arithmatex">\(R=1\)</span>）：</p>
+<div class="arithmatex">\[b=\frac{2\times0.5+(1+1+0)}{2+3}=\frac{3}{5}=0.6,\qquad A=1-0.6=0.4\]</div>
+<p>第 4 次（<span class="arithmatex">\(R=0\)</span>）：<span class="arithmatex">\(b=(1+3)/5=0.8\)</span>，<span class="arithmatex">\(A=-0.8\)</span>。成功被鼓励、失败被压制，和普通 leave-one-out 一样；区别在全对或全错的组也有非零优势。</p>
+<p><strong>这个配方是 AI 找到的</strong>（AutoRL，附录 F.2，Fig. 47）：研究代理在 RoboCasa365 上自主迭代约 35 天；每轮分析失败 → 提出至多 4 个正交假设（每个带预期和证伪标准）→ 批评者过滤 → 分支实现、集群训练评测 → 超过阈值才晋级，每轮最多晋级 1 个（L5390–L5410）。Fig. 47 上的里程碑依次包括：权重锚定、组相对优势、复合任务用进度回报、按初始场景和种子分组、用 EMA 维护所有历史组的表（就是上面的 <span class="arithmatex">\(m_g\)</span>）、长任务优势加权 1.5、按阶段的回合内信用分配。</p>
+<p><strong>一句话</strong>：基线里掺"这个场景以前的平均成绩"，全对全错的组也有学习信号；这个改法是自动研究代理 35 天找出来的。</p>
+<h3 id="2026-11-15_1">第三步：三条路线和一个"梦里练"（2026-11-15）</h3>
+<p><strong>类比：练球的三种办法。</strong> ① 直接改动作（GRPO 改模型本身）；② 只看自己进球的录像再模仿一遍（自模仿）；③ 不改原来的动作，加一个小教练在旁边微调（残差 RL）。还有第四种：在脑子里模拟比赛（神经仿真）。</p>
+<table>
+<thead>
+<tr>
+<th>路线</th>
+<th>改不改 GR00T 2</th>
+<th>怎么做</th>
+<th>原文</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GRPO</td>
+<td>改</td>
+<td>CPS 探索 + 带记忆基线 + PPO 截断</td>
+<td>式 15</td>
+</tr>
+<tr>
+<td>GRPO 诱导自模仿</td>
+<td>改</td>
+<td>收集最佳 GRPO checkpoint 的<strong>成功</strong> rollout <span class="arithmatex">\(\mathcal D_{\text{succ}}\)</span>，从同一个 SFT 起点用原始视频+动作 loss 微调一轮：<span class="arithmatex">\(\mathcal L_{SI}=\lambda_v\mathcal L_{\text{video}}+\lambda_a\mathcal L_{\text{action}}\)</span></td>
+<td>式 16，L5254–L5270</td>
+</tr>
+<tr>
+<td>残差 RL</td>
+<td><strong>不改</strong>（冻结）</td>
+<td>小的 tanh 高斯演员在指定阶段输出有界修正，累积成偏移叠到 GR00T 2 的末端目标上；SAC 训练，一半数据来自演示，含零残差先验</td>
+<td>式 17–18，L5279–L5325</td>
+</tr>
+<tr>
+<td>神经仿真 RL</td>
+<td>改</td>
+<td>DreamDojo 世界模型代替真机：GR00T 2 出动作块 → 世界模型出多视角下一帧 → 当成下一个观测；奖励来自小型视频成功分类器（稀疏奖励）</td>
+<td>§4.5.3、F.5</td>
+</tr>
+</tbody>
+</table>
+<p><strong>真机结果</strong>（Fig. 5，每柱 50 次，95% Wilson 区间）：</p>
+<table>
+<thead>
+<tr>
+<th>任务</th>
+<th>SFT</th>
+<th>残差 RL</th>
+<th>GRPO</th>
+<th>GRPO 自模仿</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>固定管件</td>
+<td>66</td>
+<td>76</td>
+<td>86</td>
+<td><strong>88</strong></td>
+</tr>
+<tr>
+<td>手指放置</td>
+<td>58</td>
+<td>84</td>
+<td>72</td>
+<td><strong>98</strong></td>
+</tr>
+<tr>
+<td>网线插入</td>
+<td>76</td>
+<td>82</td>
+<td>92</td>
+<td><strong>94</strong></td>
+</tr>
+<tr>
+<td>充电器插入</td>
+<td>40</td>
+<td>70</td>
+<td>94</td>
+<td><strong>96</strong></td>
+</tr>
+</tbody>
+</table>
+<p>（数字按 Fig. 5 柱顶标签读出，正文给的汇总是"88 / 98 / 94 / 96，SFT 40–76%"，L539–L540。）</p>
+<p><strong>神经仿真的数字</strong>（§4.5.3）：DreamDojo 先在 YAM 8,310 条四视角 episode（约 226.8 h，含失败和恢复）+ DROID 57,773 条（约 273 h）上 mid-train，多视角拼成一张画布一起预测；再用每任务几百条成功/失败 rollout 适配。世界模型里 RL 后，<strong>在真机上</strong>测：4 个任务平均 43% → 72%；RoboLab 10 任务 51% → 71%。</p>
+<p><strong>为什么用稀疏奖励</strong>：稠密进度分标注贵，而且会被策略钻空子（L1404–L1405）。</p>
+<p><strong>一句话</strong>：GRPO 负责探索出成功，自模仿把成功稳稳地学回来（效果最好），残差 RL 不碰底模型，世界模型让"练"不占真机。</p>
+<h3 id="cps">动画演示：CPS 让去噪能探索，带记忆的基线让全对的组也有信号</h3>
+<p><img alt="CPS 让去噪能探索，带记忆的基线让全对的组也有信号" src="../animations/06-cps-grpo.gif" /></p>
+<p>可交互版：<a href="../animations/06-cps-grpo.html">animations/06-cps-grpo.html</a>（▶ 播放、→ 单步、↺ 从头开始；探索强度 η 滑块（0–1））</p>
+<p><strong>怎么看</strong>：
+1. 左图 12 条轨迹从同一个初始噪声出发；η = 0 时完全重合（确定性去噪没法探索），η 越大越散（第一步）。
+2. 右边逐次算讲义第二步的例子：b = 0.6 / 0.8，A = +0.4 / −0.8，最后对比"全成功"时普通 GRPO 与带记忆基线（第二步）。</p>
+<h2 id="_2">练习与作答记录</h2>
+<p><strong>题 1</strong>（第一步 CPS）：在第一步例子里取 <span class="arithmatex">\(\eta=1\)</span>（<span class="arithmatex">\(\cos90°=0\)</span>，<span class="arithmatex">\(\sin90°=1\)</span>），<span class="arithmatex">\(\mu\)</span> 和 <span class="arithmatex">\(s_k\)</span> 各是多少？这时"确定部分"还剩什么？</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<p><strong>题 2</strong>（第二步 基线）：<span class="arithmatex">\(m_g=0.3\)</span>，<span class="arithmatex">\(h_g=2\)</span>，<span class="arithmatex">\(N_g=4\)</span>，本轮 4 次全部失败。任一次的基线和优势是多少？和普通 GRPO（只用组内）比有什么不同？</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<p><strong>题 3</strong>（第三步 路线选择）：如果一个任务已经 90% 成功、只在最后对准插孔那 1 秒出错，你会选 GRPO、自模仿还是残差 RL？说出理由。</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<h2 id="_3">口诀</h2>
+<blockquote>
+<p>只给动作加点噪，方差不变好算概；<br />
+基线掺进老成绩，全对全错也有梯；<br />
+探出成功再模仿，残差小修不动底，梦里练完真机测。</p>
+</blockquote>
+<h2 id="_4">本章复习卡片</h2>
+<p>G13、G14（练习做完后，按答错、卡住的地方再补。）</p>
+<h2 id="_5">附录 · 延伸阅读</h2>
+<h3 id="_6">推荐阅读</h3>
+<table>
+<thead>
+<tr>
+<th>读什么</th>
+<th>读哪里</th>
+<th>读它为了什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>★ GR00T 2 白皮书</td>
+<td>附录 F.1.1 L5108–L5278</td>
+<td>CPS、优势、PPO 目标、自模仿</td>
+</tr>
+<tr>
+<td>★ GR00T 2 白皮书</td>
+<td>附录 F.2 L5326 起、Fig. 47</td>
+<td>AutoRL 怎么自动做算法研究</td>
+</tr>
+<tr>
+<td>GR00T 2 白皮书</td>
+<td>附录 F.3</td>
+<td>在线 RL 基础设施（Tab. 18 每轮耗时）</td>
+</tr>
+<tr>
+<td>GR00T 2 白皮书</td>
+<td>附录 F.5 L5627 起</td>
+<td>DreamDojo 世界模型 RL</td>
+</tr>
+<tr>
+<td><code>cs285-deep-rl</code> 讲义</td>
+<td>PPO、策略梯度章</td>
+<td>截断目标和优势函数</td>
+</tr>
+<tr>
+<td>DPPO（Ren et al., 2025）、CPS（Wang &amp; Yu, 2025）、GRPO（Shao et al., 2024）、HIL-SERL（Luo et al., 2025）</td>
+<td>全文（待下载）</td>
+<td>原论文</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_7">数学原理</h3>
+<ul>
+<li><strong>策略梯度需要可算的 <span class="arithmatex">\(\log\pi\)</span></strong>：确定性采样没有密度，加高斯转移后每步密度显式。</li>
+<li><strong>方差保持</strong>：<span class="arithmatex">\(\cos^2(\eta\pi/2)+\sin^2(\eta\pi/2)=1\)</span> 让噪声部分的总方差保持 <span class="arithmatex">\(\sigma_{k+1}^2\)</span>。</li>
+<li><strong>Leave-one-out 基线</strong>：用"除自己以外"的回报做基线，保证无偏；掺伪回报相当于加一个先验，有偏但方差更小。</li>
+<li><strong>PPO 截断</strong>：限制新旧策略的似然比在 <span class="arithmatex">\([1-\epsilon,1+\epsilon]\)</span>，防止一步走太远。</li>
+</ul>
+<h3 id="_8">公式清单</h3>
+<table>
+<thead>
+<tr>
+<th>公式</th>
+<th>出处</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(\hat a_{\text{data}}=a^{(k)}-\sigma_kv\)</span>，<span class="arithmatex">\(\hat\epsilon=a^{(k)}+(1-\sigma_k)v\)</span></td>
+<td>式 (10)</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\mu=(1-\sigma_{k+1})\hat a_{\text{data}}+\sigma_{k+1}\cos(\eta\pi/2)\hat\epsilon\)</span>，<span class="arithmatex">\(s_k=\text{clip}(\sigma_{k+1}\sin(\eta\pi/2),s_{\min},s_{\max})\)</span></td>
+<td>式 (11)</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(b_{g,i}=\frac{h_gm_g+\sum_{j\ne i}R_{g,j}}{h_g+N_g-1}\)</span>，<span class="arithmatex">\(A=R-b\)</span></td>
+<td>F.1.1</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\mathcal J=\mathbb E[\min(r\hat A,\text{clip}(r,1\pm\epsilon)\hat A)]\)</span></td>
+<td>式 (15)</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\mathcal L_{SI}=\lambda_v\mathcal L_{\text{video}}(\mathcal D_{\text{succ}})+\lambda_a\mathcal L_{\text{action}}(\mathcal D_{\text{succ}})\)</span></td>
+<td>式 (16)</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(o_{j+1}=\text{clip}(o_j+\gamma\delta a_j,-B,B)\)</span>，<span class="arithmatex">\(x^{\text{cmd}}=x^{\text{GR00T 2}}\oplus o\)</span></td>
+<td>式 (17)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_9">代码对照</h3>
+<p>本章暂无代码对照：G2-M3（CPS + 带记忆 GRPO 玩具实现）完成后补 <code>ch06_rl_post_training.py</code>。</p><nav class="pager"><a href="05-x-adapt.html">← 第 5 章 · X-Adapt：不遥操作，也能教机器人新任务</a><a href="07-agentic.html">第 7 章 · Agentic GR00T 2：大模型当&quot;慢脑&quot;，GR00T 2 当&quot;快手&quot; →</a></nav>
+</main>
+<footer>来自个人学习仓库的对话讲义，含练习作答记录。源码：<a href="https://github.com/wikieden/reading-gr00t2">github.com/wikieden/reading-gr00t2</a></footer>
+</body></html>

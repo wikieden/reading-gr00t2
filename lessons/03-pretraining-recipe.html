@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>第 3 章 · 三阶段预训练与少样本适配：先学看，再学动，最后学&quot;我的身体&quot; · 读懂 GR00T 2</title>
+<style>
+:root{--bg:#fbfbfa;--fg:#1f2328;--mute:#5d6470;--line:#e3e5e8;--card:#fff;--acc:#2f6fdf;--code:#f2f3f5;--quote:#f4f6fa}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181d;--fg:#e4e7ec;--mute:#9aa3b2;--line:#2c323b;--card:#1c2026;--acc:#7aa7ff;--code:#22272f;--quote:#1b2029}}
+:root[data-theme="dark"]{--bg:#15181d;--fg:#e4e7ec;--mute:#9aa3b2;--line:#2c323b;--card:#1c2026;--acc:#7aa7ff;--code:#22272f;--quote:#1b2029}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.75 -apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",sans-serif}
+a{color:var(--acc)}
+header.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+header.top .in{max-width:860px;margin:0 auto;padding:10px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:14px}
+header.top .brand{font-weight:600;color:var(--fg);text-decoration:none;margin-right:auto}
+header.top a{text-decoration:none}
+main{max-width:860px;margin:0 auto;padding:24px 16px 72px;overflow-wrap:anywhere}
+h1{font-size:28px;line-height:1.35;margin:8px 0 16px} h2{font-size:22px;margin:40px 0 12px;padding-top:8px;border-top:1px solid var(--line)} h3{font-size:18px;margin:28px 0 8px}
+img{max-width:100%;height:auto;border-radius:8px;border:1px solid var(--line);background:#fff}
+blockquote{margin:16px 0;padding:10px 16px;background:var(--quote);border-left:3px solid var(--acc);border-radius:4px;color:var(--mute)}
+blockquote p{margin:4px 0}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:var(--code);padding:12px 14px;border-radius:8px;overflow-x:auto} pre code{padding:0;background:none}
+table{border-collapse:collapse;display:block;overflow-x:auto;max-width:100%;margin:12px 0;font-size:15px}
+th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top} th{background:var(--code)}
+details{border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin:8px 0;background:var(--card)}
+details[open]{padding-bottom:10px} summary{cursor:pointer;color:var(--acc);font-weight:500}
+mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+.btn{display:inline-block;margin:4px 8px 4px 0;padding:6px 14px;border:1px solid var(--acc);border-radius:999px;text-decoration:none;font-size:14px}
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin:16px 0}
+.card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;color:inherit;text-decoration:none}
+.card:hover{border-color:var(--acc)} .card img{border:0;border-bottom:1px solid var(--line);border-radius:0;aspect-ratio:16/10;object-fit:contain;width:100%}
+.card .no{color:var(--mute);font-size:13px;padding:8px 12px 0} .card .t{padding:0 12px 12px;font-weight:500;line-height:1.5}
+.lead{font-size:17px;color:var(--mute)}
+footer{max-width:860px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font-size:13px}
+</style>
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"],["$$","$$"]],processEscapes:true,processEnvironments:true}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+</head><body>
+<header class="top"><div class="in">
+<a class="brand" href="../index.html">读懂 GR00T 2</a>
+<a href="../lessons/index.html">讲义目录</a>
+<a href="../animations/index.html">动画</a>
+<a href="../review.html">复习卡片</a>
+<a href="../lessons/appendix-glossary.html">缩写表</a>
+</div></header>
+<main>
+<h1 id="3">第 3 章 · 三阶段预训练与少样本适配：先学看，再学动，最后学"我的身体"</h1><p><a class="btn" href="../animations/03-stages-lora.html">▶ 打开本章可交互动画</a></p>
+<blockquote>
+<p>本章回答：一个视频生成模型，经过哪几步变成能控制多种机器人的策略？新任务只有 1–5 条演示时，怎么在 30 分钟里适配？<br />
+讲解日期：2026-11-15 · 上一章：<a href="../lessons/02-architecture.html">第 2 章 架构</a> · 下一章：<a href="../lessons/04-data-mixture.html">第 4 章 数据配方</a><br />
+对应原文：<code>materials/text/gr00t2-whitepaper.txt</code> §4.1 L873–L903；§3.1 L344–L469；附录 A.3 L2532–L2560；§4.7.1 L1529–L1556<br />
+本章缩写：LoRA = Low-Rank Adaptation（低秩 / 适配）；SFT = Supervised Fine-Tuning（监督 / 微调）；ZeRO = Zero Redundancy Optimizer（零 / 冗余 / 优化器）；BF16 = Brain Float 16（Google Brain 的 16 位浮点）；GPU = Graphics Processing Unit（图形 / 处理 / 单元）。全部缩写见 <a href="../lessons/appendix-glossary.html">附录 · 缩写与术语表</a></p>
+</blockquote>
+<h2 id="_1">讲解</h2>
+<h3 id="2026-11-15">第一步：三个阶段各学什么（2026-11-15）</h3>
+<p><strong>类比：学开车的三段式。</strong> 先坐副驾驶看很多人开车（只看，不摸方向盘）；再自己上手，在各种车上练"看到路况怎么打方向"；最后专门在自己要开的那辆车上多练。</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>数据</th>
+<th>视角</th>
+<th>出动作吗</th>
+<th>目的</th>
+<th>原文</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>初始化</td>
+<td>Cosmos-Predict2.5-2B 视频 DiT</td>
+<td>—</td>
+<td>—</td>
+<td>继承"世界怎么动"的视频先验</td>
+<td>L874</td>
+</tr>
+<tr>
+<td><strong>Stage 1</strong> 单视角视频预训练</td>
+<td>主要是第一视角人类视频，补少量机器人视频</td>
+<td>单路相机</td>
+<td><strong>否</strong>，只预测未来视频</td>
+<td>建立"具身交互"的视觉动力学先验</td>
+<td>L881–L886</td>
+</tr>
+<tr>
+<td><strong>Stage 2</strong> 多视角视频-动作联合</td>
+<td>人类 + 机器人；加大 YAM 和灵巧手比例，仍保留大量人类数据</td>
+<td>多路（有就用）</td>
+<td>是；机器人用自己的动作，人类用跟踪到的手部姿态；<strong>没有有效动作标签就不算动作 loss</strong></td>
+<td>把视觉动力学接到动作上</td>
+<td>L887–L895</td>
+</tr>
+<tr>
+<td><strong>Stage 3</strong> 机器人加权</td>
+<td>同上，但更偏机器人（尤其 YAM）</td>
+<td>多路</td>
+<td>是</td>
+<td>让输出落到机器人自己的动作空间</td>
+<td>L896–L901</td>
+</tr>
+</tbody>
+</table>
+<p><strong>公式</strong>（按 Stage 2 的描述写的示意，权重细节正文没给）：</p>
+<div class="arithmatex">\[\mathcal L=\lambda_v\,\mathcal L_{\text{video}}+\lambda_a\,m\cdot\mathcal L_{\text{action}},\qquad m=\begin{cases}1&amp;\text{有有效动作标签}\\0&amp;\text{没有}\end{cases}\]</div>
+<p><span class="arithmatex">\(\lambda_v\)</span>、<span class="arithmatex">\(\lambda_a\)</span>（读作 lambda v、lambda a）是两项的权重；<span class="arithmatex">\(m\)</span>（mask，掩码）决定动作项算不算。附录 F 式 (16) 的自模仿 loss 用的正是 <span class="arithmatex">\(\lambda_v\mathcal L_{\text{video}}+\lambda_a\mathcal L_{\text{action}}\)</span> 这个形式（L5262）。</p>
+<p><strong>例子（编的 batch）。</strong> 一个 batch 4 条样本：</p>
+<table>
+<thead>
+<tr>
+<th>样本</th>
+<th>来源</th>
+<th>视频 loss</th>
+<th>动作 loss</th>
+<th><span class="arithmatex">\(m\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>YAM 遥操作</td>
+<td>0.30</td>
+<td>0.20</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Sharpa 灵巧手遥操作</td>
+<td>0.40</td>
+<td>0.50</td>
+<td>1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>人类视频，有手部姿态（Stage 2）</td>
+<td>0.35</td>
+<td>0.60</td>
+<td>1</td>
+</tr>
+<tr>
+<td>4</td>
+<td>人类视频，手部跟踪失败</td>
+<td>0.25</td>
+<td>—</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>取 <span class="arithmatex">\(\lambda_v=\lambda_a=1\)</span>：总 loss = <span class="arithmatex">\((0.30+0.40+0.35+0.25)+(0.20+0.50+0.60)=1.30+1.30=2.60\)</span>。样本 4 只贡献视频项。</p>
+<p><strong>一句话</strong>：Stage 1 只学看（视频），Stage 2 学看 + 动（有标签才算动作），Stage 3 把重心挪到机器人自己的数据。</p>
+<h3 id="2026-11-15_1">第二步：预训练怎么跑起来（2026-11-15）</h3>
+<p><strong>类比：2B 是"小车"，不用拆开装。</strong> 模型小到一张卡放得下全部参数，就不必像大模型那样把模型切到多张卡上（流水线、张量并行），每张卡各算各的 batch，只同步梯度。</p>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>数字</th>
+<th>原文</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>硬件</td>
+<td>GB300 NVL72，每 GPU 288 GB HBM3e、约 2.5 PFLOPS 稠密 BF16</td>
+<td>L1531–L1534</td>
+</tr>
+<tr>
+<td>集群 / 主训练</td>
+<td>2,016 张 / 用 1,024 张</td>
+<td>L1536–L1537</td>
+</tr>
+<tr>
+<td>并行</td>
+<td>同步数据并行 + DeepSpeed ZeRO-2（梯度和优化器状态切分，权重每卡一份）</td>
+<td>L1545–L1546</td>
+</tr>
+<tr>
+<td>每卡 batch</td>
+<td>16</td>
+<td>L1548</td>
+</tr>
+<tr>
+<td>打包</td>
+<td>32,768-token 一行，填充率 94.5%</td>
+<td>L1579</td>
+</tr>
+</tbody>
+</table>
+<p><strong>例子：ZeRO-2 省了多少显存（编的估算）。</strong> 2B 参数，BF16 权重 2 字节/参数 = 4 GB；Adam 优化器状态（FP32 主权重 + 两个动量）约 12 字节/参数 = 24 GB；梯度 BF16 = 4 GB。ZeRO-2 把优化器状态和梯度切到 <span class="arithmatex">\(N\)</span> 张卡上：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>不切分</th>
+<th>ZeRO-2，<span class="arithmatex">\(N=1024\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>权重</td>
+<td>4 GB</td>
+<td>4 GB</td>
+</tr>
+<tr>
+<td>梯度</td>
+<td>4 GB</td>
+<td>≈ 0.004 GB</td>
+</tr>
+<tr>
+<td>优化器状态</td>
+<td>24 GB</td>
+<td>≈ 0.02 GB</td>
+</tr>
+<tr>
+<td>合计</td>
+<td>32 GB</td>
+<td>≈ 4 GB</td>
+</tr>
+</tbody>
+</table>
+<p>剩下的 280 GB 左右都给激活值，所以每卡 batch 能开到 16。（字节数是常见混合精度 Adam 的估算，白皮书没给。）</p>
+<p><strong>一句话</strong>：2B 模型 + 1,024 张 GB300 + ZeRO-2 纯数据并行，显存主要留给视频激活。</p>
+<h3 id="rank-32-lora30-2026-11-15">第三步：少样本适配——rank-32 LoRA，30 分钟（2026-11-15）</h3>
+<p><strong>类比：给老师傅贴一张便签。</strong> 不改老师傅的脑子（预训练权重冻结），只在每个关键位置贴一张很薄的便签（低秩矩阵）提醒"这个任务要这样"；用完把便签内容抄进笔记本（merge），以后不用再带便签。</p>
+<p><strong>公式。</strong> 一个线性层原权重 <span class="arithmatex">\(W\in\mathbb R^{d\times k}\)</span>，LoRA 学两个小矩阵 <span class="arithmatex">\(B\in\mathbb R^{d\times r}\)</span>、<span class="arithmatex">\(A\in\mathbb R^{r\times k}\)</span>：</p>
+<div class="arithmatex">\[W'=W+BA,\qquad r\ll\min(d,k)\]</div>
+<p><span class="arithmatex">\(r\)</span> 读作 rank（秩），GR00T 2 用 <span class="arithmatex">\(r=32\)</span>。</p>
+<p><strong>设定</strong>（附录 A.3 L2537–L2547）：
+- LoRA 加在 Transformer <strong>每一个线性层</strong>；文本编码器、VAE、动作/状态头、全部预训练权重冻结；
+- loss 与预训练相同（视频 + 动作 flow matching）；
+- 每条 episode 切 100 个均匀窗口，<strong>按冻结模型在该窗口上的 loss 成比例采样</strong>——难的阶段（抓取、插入）被多练；
+- 所有任务同一组超参；单张 RTX 5090 约 30 分钟；训完把 <span class="arithmatex">\(BA\)</span> 合进 <span class="arithmatex">\(W\)</span>，服务方式与预训练模型完全一样。</p>
+<p><strong>例子 1：参数量。</strong> 底座宽度 2048，一个 <span class="arithmatex">\(2048\times2048\)</span> 的注意力投影：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>参数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>原 <span class="arithmatex">\(W\)</span></td>
+<td><span class="arithmatex">\(2048\times2048\approx4.19\)</span>M</td>
+</tr>
+<tr>
+<td>LoRA <span class="arithmatex">\(B\)</span>+<span class="arithmatex">\(A\)</span>，<span class="arithmatex">\(r=32\)</span></td>
+<td><span class="arithmatex">\(2048\times32+32\times2048=131{,}072\approx0.13\)</span>M</td>
+</tr>
+<tr>
+<td>占比</td>
+<td>≈ 3.1%</td>
+</tr>
+</tbody>
+</table>
+<p><strong>例子 2：按 loss 采样（编的数）。</strong> 一条 episode 切成 4 个窗口（真实是 100 个），冻结模型 loss：</p>
+<table>
+<thead>
+<tr>
+<th>窗口</th>
+<th>伸手</th>
+<th>抓取</th>
+<th>搬运</th>
+<th>插入</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>loss</td>
+<td>0.1</td>
+<td>0.4</td>
+<td>0.1</td>
+<td>0.4</td>
+</tr>
+<tr>
+<td>采样概率</td>
+<td>0.1</td>
+<td>0.4</td>
+<td>0.1</td>
+<td>0.4</td>
+</tr>
+</tbody>
+</table>
+<p>抓取和插入被抽到的次数是伸手的 4 倍。</p>
+<p><strong>结果</strong>（Dexter-50，§3.1 / Fig. 2）：零样本 40% → 1 条 71% → 5 条 95%（这 50 个任务是从"5 条能学到 ≥ 80%"的任务里挑的，L466–L467）。</p>
+<p><strong>一句话</strong>：冻结一切、只在每个线性层贴 rank-32 的 LoRA，难的窗口多练，30 分钟一张 5090，合并后零额外开销。</p>
+<h3 id="losslora">动画演示：三个阶段各算哪些 loss，LoRA 为什么多练难段</h3>
+<p><img alt="三个阶段各算哪些 loss，LoRA 为什么多练难段" src="../animations/03-stages-lora.gif" /></p>
+<p>可交互版：<a href="../animations/03-stages-lora.html">animations/03-stages-lora.html</a>（▶ 播放、→ 单步、↺ 从头开始；"抓取"窗口的 loss 滑块）</p>
+<p><strong>怎么看</strong>：
+1. 上表逐列亮起：Stage 1 只有视频格，Stage 2 起有效动作标签才有动作格，Stage 3 机器人样本标"权重↑"（第一步；配比白皮书未给，只示方向）。
+2. 下半部分每步按 loss 成比例抽一个窗口，柱子是累计被抽次数（第三步）。
+3. 拖滑块改"抓取"窗口的 loss，看它被抽中的次数跟着变。</p>
+<h2 id="_2">练习与作答记录</h2>
+<p><strong>题 1</strong>（第一步 三阶段）：Stage 1 为什么"只预测视频、不出动作"？如果直接从 Stage 2 开始，第 1 章里那条 scaling 曲线的 0% 点和哪个设定最像？</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<p><strong>题 2</strong>（第一步 掩码 loss）：在第一步的例子里，若 <span class="arithmatex">\(\lambda_a=0.5\)</span>，总 loss 是多少？</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<p><strong>题 3</strong>（第三步 LoRA）：<span class="arithmatex">\(2048\times8192\)</span> 的 FFN 第一层加 rank-32 LoRA，新增多少参数？占原层的百分之几？</p>
+<blockquote>
+<p>作答：（待作答）</p>
+</blockquote>
+<h2 id="_3">口诀</h2>
+<blockquote>
+<p>先看后动再认身，一阶只把画面跟；<br />
+有标才算动作损，机器加权落自身；<br />
+贴张低秩小便签，难段多练半小时。</p>
+</blockquote>
+<h2 id="_4">本章复习卡片</h2>
+<p>G07、G08（练习做完后，按答错、卡住的地方再补。）</p>
+<h2 id="_5">附录 · 延伸阅读</h2>
+<h3 id="_6">推荐阅读</h3>
+<table>
+<thead>
+<tr>
+<th>读什么</th>
+<th>读哪里</th>
+<th>读它为了什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>★ GR00T 2 白皮书</td>
+<td>§4.1 L873–L903</td>
+<td>三阶段原文</td>
+</tr>
+<tr>
+<td>★ GR00T 2 白皮书</td>
+<td>附录 A.3 L2532–L2560</td>
+<td>LoRA 设定和 Dexter-50 结果</td>
+</tr>
+<tr>
+<td>GR00T 2 白皮书</td>
+<td>§4.7.1 L1529–L1556、附录 K.4</td>
+<td>分布式训练细节</td>
+</tr>
+<tr>
+<td><code>distributed-pretraining</code> 工程报告</td>
+<td>ZeRO 一节</td>
+<td>ZeRO-1/2/3 切什么</td>
+</tr>
+<tr>
+<td>LoRA 原论文（Hu et al., 2021）</td>
+<td>§4</td>
+<td>低秩更新的动机（本地未归档）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_7">数学原理</h3>
+<ul>
+<li><strong>掩码损失</strong>：多源数据缺不同标签时，每项 loss 乘 0/1 掩码再求和，梯度只来自有标签的项。</li>
+<li><strong>低秩分解</strong>：<span class="arithmatex">\(BA\)</span> 的秩不超过 <span class="arithmatex">\(r\)</span>，参数从 <span class="arithmatex">\(dk\)</span> 降到 <span class="arithmatex">\(r(d+k)\)</span>。</li>
+<li><strong>重要性采样式的窗口选择</strong>：按 loss 比例采样，等价于把训练预算集中到模型最不会的地方。</li>
+</ul>
+<h3 id="_8">公式清单</h3>
+<table>
+<thead>
+<tr>
+<th>公式</th>
+<th>意思</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(\mathcal L=\lambda_v\mathcal L_{\text{video}}+\lambda_a m\mathcal L_{\text{action}}\)</span></td>
+<td>视频-动作联合 loss，<span class="arithmatex">\(m\)</span> 是动作标签掩码</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(W'=W+BA\)</span>，<span class="arithmatex">\(B\in\mathbb R^{d\times r}\)</span>，<span class="arithmatex">\(A\in\mathbb R^{r\times k}\)</span></td>
+<td>LoRA</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(r(d+k)\)</span> vs <span class="arithmatex">\(dk\)</span></td>
+<td>LoRA 新增参数 vs 原参数</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_9">代码对照</h3>
+<p>本章暂无代码对照：代码发布后补 <code>ch03_pretraining_recipe.py</code>（掩码 loss 与 LoRA 参数量核对）。</p><nav class="pager"><a href="02-architecture.html">← 第 2 章 · 架构：一条序列里同时画视频、出动作</a><a href="04-data-mixture.html">第 4 章 · 数据配方：人类视频、UMI、遥操作各管什么 →</a></nav>
+</main>
+<footer>来自个人学习仓库的对话讲义，含练习作答记录。源码：<a href="https://github.com/wikieden/reading-gr00t2">github.com/wikieden/reading-gr00t2</a></footer>
+</body></html>
