@@ -1,6 +1,6 @@
 # 读懂 GR00T 2
 
-**在线阅读：<https://wikieden.github.io/reading-gr00t2/>** · [讲义目录](https://wikieden.github.io/reading-gr00t2/lessons/index.html) · [全部动画](https://wikieden.github.io/reading-gr00t2/animations/index.html) · [复习卡片](https://wikieden.github.io/reading-gr00t2/review.html)
+**在线阅读：<https://wikieden.github.io/reading-gr00t2/>** · [讲义目录](https://wikieden.github.io/reading-gr00t2/lessons/index.html) · [全部动画](https://wikieden.github.io/reading-gr00t2/animations/index.html) · [复习卡片](https://wikieden.github.io/reading-gr00t2/review.html) · [全部讲义书](https://wikieden.github.io/ai-books/)
 
 > 11 章 · 10 个动画（GIF + 可交互页面）· 24 张复习卡片 · 覆盖 GR00T 2 白皮书（2026-11）正文 §1–5 与附录 A–K 的主要内容
 

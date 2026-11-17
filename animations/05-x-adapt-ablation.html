@@ -27,4 +27,5 @@ function reset(){k=0;R.forEach(r=>r.forEach(c=>{c.b.setAttribute('width',0);c.t.
 function next(){if(k>=R.length)return false;R[k].forEach(c=>{c.b.setAttribute('width',Math.max(1,c.v/100*GW));c.t.setAttribute('x',c.x+Math.max(1,c.v/100*GW)+4);c.t.textContent=c.v+'%';
   if(k>0&&c.v===0)c.t.setAttribute('style','fill:var(--bad)')});k++;return true}
 setupPlayer({captureSeed:1,reset,next},900);
-</script></body></html>
+</script><a href="https://wikieden.github.io/ai-books/" style="position:fixed;right:12px;bottom:12px;z-index:99;padding:4px 10px;border-radius:14px;background:rgba(127,127,127,.18);color:inherit;font:13px/1.6 system-ui,sans-serif;text-decoration:none">← 全部讲义书</a>
+</body></html>
