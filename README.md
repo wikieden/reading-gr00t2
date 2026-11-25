@@ -46,6 +46,17 @@
 | 10 | [部署](https://wikieden.github.io/reading-gr00t2/lessons/10-deployment.html) | 加速 2.9–7.2×、noisy-prefix RTC、按阶段变速快 15–26% | [▶](https://wikieden.github.io/reading-gr00t2/animations/10-latency-rtc.html) | G22–G23 | 🟡 正文已写，练习待作答 |
 | 11 | [开放问题](https://wikieden.github.io/reading-gr00t2/lessons/11-open-problems.html) | 预测什么、数据汇率、99% 可靠性怎么测 | 无 | G24 | 🟡 正文已写，练习待作答 |
 
+## 联系与合作
+
+欢迎来信：<wikieden@gmail.com>。可以合作的方向：
+
+- 讲义勘误与建议
+- 课程 / 企业内训
+- 内容合作与转载授权
+- 赞助本系列持续更新
+
+赞助请发邮件联系。
+
 ---
 
 本仓库由私有学习仓库里的脚本 `tools/publish-transformer/build.py` 自动生成，内容摘自讲义目录，不要直接修改这里的文件。
